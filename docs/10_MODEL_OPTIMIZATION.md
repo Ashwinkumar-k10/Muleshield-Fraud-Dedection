@@ -33,6 +33,10 @@ Four hyperparameter grid configurations were evaluated across 5-Fold Group-Aware
 | Config #3 | `3` | `5` | `0.5` | `0.8` | `0.7` | `1.0` | `3.0` | `0.03` | `0.8732 ± 0.0353` | Rejected (Over-regularized) |
 | Config #4 | `2` | `3` | `0.0` | `0.8` | `0.8` | `0.0` | `1.0` | `0.05` | `0.8403 ± 0.0434` | Rejected (Underfitted) |
 
+> [!NOTE]
+> **Hyperparameter Search Champion vs. Final Serialized Model Metric:**  
+> Config #1 represents the **Hyperparameter Search Champion** experiment result obtained during grid-search tuning (`0.8833 ± 0.0365` PR-AUC). The **Final Serialized / Verified Model** achieves **`0.8807 ± 0.0403` PR-AUC** under full out-of-fold 5-fold group cross-validation benchmarking across the sanitized dataset.
+
 ---
 
 ## 3. Analysis of Optimization Choices

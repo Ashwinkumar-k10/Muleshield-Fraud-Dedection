@@ -57,6 +57,10 @@ The champion model parameters are stored at [modeling/model_config.json](file://
 }
 ```
 
+> [!NOTE]
+> **Hyperparameter Search Champion vs. Final Model Metric:**  
+> The `"pr_auc_mean": 0.8833` value stored in `model_config.json` represents the **Hyperparameter Search Champion** experiment result obtained during grid-search tuning (`0.8833 ± 0.0365` PR-AUC). The **Final Serialized / Verified Model** achieves **`0.8807 ± 0.0403` PR-AUC** under full out-of-fold 5-fold group cross-validation benchmarking across the sanitized dataset.
+
 ### Parameter Breakdown:
 * **`tree_method = 'hist'`:** High-speed histogram binning for large tabular matrices.
 * **`max_depth = 3`:** Restricts tree depth to 3 levels, preventing deep leaf memorization.

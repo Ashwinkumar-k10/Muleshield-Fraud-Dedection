@@ -26,7 +26,7 @@ MuleShield PRO was engineered specifically for unseen data generalization. An au
 │ Temporal Date Overfitting  │ LOW RISK             │ Purged F2230 and F3888 date proxies    │
 │ Deep Leaf Memorization    │ LOW RISK             │ Constrained max_depth=3 & min_child=3  │
 │ Feature Noise Sensitivity │ LOW RISK             │ Elastic Net L1=0.1 and L2=1.0 applied  │
-│ Fold Score Variance       │ LOW RISK             │ Low PR-AUC std (±0.0365 across folds)  │
+│ Fold Score Variance       │ LOW RISK             │ Low PR-AUC std (±0.0403 across final folds) │
 │ Threshold Instability     │ LOW RISK             │ Decision threshold tuned on val folds  │
 └───────────────────────────┴──────────────────────┴────────────────────────────────────────┘
 ```

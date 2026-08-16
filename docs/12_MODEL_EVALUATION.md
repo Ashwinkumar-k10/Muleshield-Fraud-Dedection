@@ -12,8 +12,8 @@ All cross-validation evaluation metrics reported in MuleShield PRO are derived f
 ├───────────────────────────────────────────────┬───────────────────────────────────────────┤
 │ Metric                                        │ Verified CV Value (Mean ± Std)            │
 ├───────────────────────────────────────────────┼───────────────────────────────────────────┤
-│ PR-AUC (Precision-Recall Area Under Curve)    │ 0.8807 ± 0.0403                           │
-│ Champion Config PR-AUC                        │ 0.8833 ± 0.0365                           │
+│ Final Serialized / Verified Model PR-AUC      │ 0.8807 ± 0.0403                           │
+│ Hyperparameter Search Champion PR-AUC         │ 0.8833 ± 0.0365                           │
 │ Precision (Validation Folds)                  │ 1.0000 (100.0% Precision on validation)   │
 │ Recall (Validation Folds)                     │ 0.6164 (61.64% Fraud Recall)              │
 │ F1-Score (Validation Folds)                   │ 0.7586                                     │

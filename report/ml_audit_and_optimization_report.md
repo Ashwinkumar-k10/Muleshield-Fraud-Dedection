@@ -108,7 +108,7 @@ Evaluated across **5-Fold Group-Aware Cross-Validation** (Grouped by 6,118 cosin
 
 ## 8. 📊 Performance Summary on Unseen Data
 
-* **Expected PR-AUC:** **`0.8833 ± 0.0365`** *(Robust performance across all unseen folds)*
+* **Expected PR-AUC:** **`0.8807 ± 0.0403`** *(Final serialized model benchmark; 0.8833 ± 0.0365 hyperparameter search champion)*
 * **Expected Recall:** **`0.6164`** *(+18.52% boost over pure scale_pos_weight)*
 * **Expected Precision:** **`1.0000`** *(Zero false positives on group-validation folds)*
 

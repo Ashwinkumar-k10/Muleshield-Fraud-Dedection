@@ -34,7 +34,7 @@ This document explains the entire **MuleShield PRO** system from initial raw dat
  │ 10. Execute 5-Fold Group CV (Isolate 6,118 clusters across 5 folds).                    │
  │ 11. Oversample Training Folds (Apply SMOTE strictly inside train fold loop).             │
  │ 12. Train XGBoost Classifier (tree_method='hist', max_depth=3, L1=0.1, L2=1.0).          │
- │ 13. Optimize Hyperparameters (Champion PR-AUC 0.8833 ± 0.0365).                          │
+ │ 13. Optimize Hyperparameters (Grid Search Champion 0.8833 ± 0.0365).             │
  │ 14. Calibrate Decision Threshold (Tuned to 0.9899 on validation folds).                  │
  │ 15. Serialize Model Artifacts (`mule_shield_model.json`, `preprocessor.pkl`).             │
  └────────────────────────────────────────────┬────────────────────────────────────────────┘
@@ -122,9 +122,9 @@ This document explains the entire **MuleShield PRO** system from initial raw dat
 * **Output:** Fitted XGBoost tree ensemble.
 
 ### Step 13: Hyperparameter Optimization Search
-* **What Happens:** Evaluates parameter configurations across folds, selecting Config #1 (`PR-AUC 0.8833 ± 0.0365`).
-* **Input:** Cross-validation predictions.
-* **Output:** Selected champion hyperparameter dictionary.
+* **What Happens:** Hyperparameter optimization identified a champion configuration with PR-AUC `0.8833 ± 0.0365` (stored in `model_config.json`). The final serialized MuleShield PRO model is documented and verified at `0.8807 ± 0.0403` PR-AUC across out-of-fold group cross-validation splits.
+* **Input:** Cross-validation predictions across candidate hyperparameter grids.
+* **Output:** Selected champion hyperparameter dictionary and verified final model benchmark.
 
 ### Step 14: Decision Threshold Calibration
 * **What Happens:** Computes Precision-Recall curve on validation folds, calibrating optimal decision threshold to `0.9899`.

@@ -123,7 +123,7 @@ Evaluated over 5-Fold Group-Aware CV:
 
 | Category | Qualitative Risk Rating | Mitigation & Evidence |
 | :--- | :--- | :--- |
-| **Fold Stability** | **LOW** | PR-AUC std is low ($\pm 0.0365$) across all group splits. |
+| **Fold Stability** | **LOW** | PR-AUC std is low ($\pm 0.0403$ final model; $\pm 0.0365$ hyperparameter search) across group splits. |
 | **Variance / Overfitting** | **LOW** | Shallow depth (`max_depth=3`) + L1/L2 regularization prevents memorization. |
 | **Data Drift Resistance** | **LOW** | Date proxy columns removed; model relies on invariant behavioral ratios. |
 | **Threshold Robustness** | **LOW** | Threshold `0.9899` tuned on validation folds. |
