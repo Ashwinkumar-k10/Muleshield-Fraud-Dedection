@@ -1,0 +1,25 @@
+# Large Data Files (>100MB limit on GitHub)
+data_copy.csv
+muleshield_deploy_pack/sample_data.csv
+data/*.parquet
+data/*.npy
+
+# Node & Next.js Build Artifacts
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Python Cache & Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# System / Editor Files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
