@@ -15,7 +15,7 @@ import sys
 
 from modeling.preprocessor import MuleShieldPreprocessor
 
-DATA_PATH = 'data_copy.csv'
+DATA_PATH = os.path.join('data', 'data_copy.csv') if os.path.exists(os.path.join('data', 'data_copy.csv')) else 'data_copy.csv'
 TARGET_COL = 'F3924'
 
 os.makedirs('modeling', exist_ok=True)

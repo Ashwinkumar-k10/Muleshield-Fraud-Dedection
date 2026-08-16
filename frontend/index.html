@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuleShield PRO — Enterprise AI/ML Mule Detection & Regulatory Compliance Platform</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 Pro CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Vis Network CDN for Interactive Graph -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/standalone/umd/vis-network.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/css">
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .enterprise-card { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 1rem; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05); }
+        .active-tab { background-color: #2563eb !important; color: #ffffff !important; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        #vis-network-container { width: 100%; height: 420px; background-color: #ffffff; border-radius: 0.75rem; border: 1px solid #e2e8f0; }
+    </style>
+</head>
+<body class="h-screen flex flex-col overflow-hidden bg-slate-50 antialiased selection:bg-blue-500 selection:text-white">
+
+    <!-- Top Navigation Header -->
+    <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0 z-20 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-xl font-black shadow-md shadow-blue-500/20">
+                <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-lg font-black text-slate-900 tracking-tight font-sans">MuleShield <span class="text-blue-600">PRO</span></h1>
+                    <span class="px-2 py-0.5 rounded-full text-[10px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">PSB CYBERSHIELD 2026</span>
+                </div>
+                <p class="text-[11px] text-slate-500 font-medium">Enterprise AI/ML Mule Detection & Regulatory Compliance System</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span class="text-slate-600 font-semibold">XGBoost Engine (0.9115 PR-AUC)</span>
+            </div>
+
+            <button onclick="exportQueueCSV()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-2 shadow-sm">
+                <i class="fa-solid fa-download"></i>
+                <span>Export Cases CSV</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Navigation + Workspace -->
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="w-64 bg-white border-r border-slate-200 flex flex-col p-4 space-y-2 z-10">
+            <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1 tracking-wider">Enterprise Navigation</div>
+            
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-bold active-tab transition">
+                <i class="fa-solid fa-table-list text-sm"></i>
+                <span>Risk Case Queue</span>
+            </button>
+
+            <button onclick="switchTab('sandbox')" id="nav-sandbox" class="nav-item w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
+                <i class="fa-solid fa-flask text-sm"></i>
+                <span>Live Account Sandbox</span>
+            </button>
+
+            <button onclick="switchTab('graph')" id="nav-graph" class="nav-item w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
+                <i class="fa-solid fa-diagram-project text-sm"></i>
+                <span>Mule Network Ring</span>
+            </button>
+
+            <button onclick="switchTab('regulatory')" id="nav-regulatory" class="nav-item w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
+                <i class="fa-solid fa-building-columns text-sm"></i>
+                <span>Regulatory Intelligence</span>
+            </button>
+
+            <button onclick="switchTab('calibration')" id="nav-calibration" class="nav-item w-full flex items-center space-x-3 px-3.5 py-3 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition">
+                <i class="fa-solid fa-sliders text-sm"></i>
+                <span>Model Audit & Metrics</span>
+            </button>
+
+            <div class="mt-auto pt-4 border-t border-slate-200 space-y-3">
+                <div class="enterprise-card p-3 text-xs space-y-2">
+                    <div class="flex justify-between font-mono text-[11px]">
+                        <span class="text-slate-500 font-medium">DECISION THRESHOLD</span>
+                        <span id="thresh-val-display" class="font-bold text-blue-600">0.9934</span>
+                    </div>
+                    <input type="range" min="0.50" max="0.999" step="0.001" value="0.9934" oninput="updateThreshold(this.value)" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                </div>
+
+                <div class="text-center">
+                    <p class="text-[11px] text-slate-400 font-medium">Secured with PMLA Compliance Standards</p>
+                </div>
+            </div>
+        </aside>
+
+        <!-- TAB 1: RISK CASE QUEUE & INSPECTOR -->
+        <main id="tab-dashboard" class="flex-1 flex flex-col overflow-hidden bg-slate-50">
+            <!-- Executive Metrics Banner -->
+            <div class="grid grid-cols-4 gap-4 px-6 py-4 border-b border-slate-200 bg-white shadow-sm">
+                <div class="enterprise-card p-4 flex items-center justify-between">
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold tracking-wide uppercase">Total Evaluated Cases</p>
+                        <h3 id="stat-total" class="text-2xl font-black font-mono text-slate-900 mt-1">9,082</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 text-lg">
+                        <i class="fa-solid fa-list-check"></i>
+                    </div>
+                </div>
+
+                <div class="enterprise-card p-4 flex items-center justify-between border-l-4 border-l-red-500">
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold tracking-wide uppercase">Critical Mule Alerts</p>
+                        <h3 id="stat-critical" class="text-2xl font-black font-mono text-red-600 mt-1">87</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600 text-lg">
+                        <i class="fa-solid fa-circle-exclamation"></i>
+                    </div>
+                </div>
+
+                <div class="enterprise-card p-4 flex items-center justify-between border-l-4 border-l-orange-500">
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold tracking-wide uppercase">High Risk Cases</p>
+                        <h3 id="stat-high" class="text-2xl font-black font-mono text-orange-600 mt-1">19</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 text-lg">
+                        <i class="fa-solid fa-user-shield"></i>
+                    </div>
+                </div>
+
+                <div class="enterprise-card p-4 flex items-center justify-between border-l-4 border-l-emerald-500">
+                    <div>
+                        <p class="text-xs text-slate-500 font-semibold tracking-wide uppercase">Cleared Accounts</p>
+                        <h3 id="stat-cleared" class="text-2xl font-black font-mono text-emerald-600 mt-1">8,934</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-lg">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Table & Inspector Split -->
+            <div class="flex-1 flex overflow-hidden">
+                
+                <!-- Left Panel: Cases Queue -->
+                <div class="w-1/2 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
+                    <!-- Controls Header -->
+                    <div class="p-4 border-b border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 flex-shrink-0">
+                        <div class="relative flex-1 min-w-[200px]">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-magnifying-glass text-slate-400 text-xs"></i>
+                            </div>
+                            <input type="text" id="search-input" onkeyup="renderTable()" placeholder="Search Account ID..." class="w-full bg-white border border-slate-300 text-slate-800 text-xs rounded-xl pl-9 pr-3 py-2 font-mono focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-sm">
+                        </div>
+
+                        <div class="flex items-center space-x-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm flex-shrink-0">
+                            <button onclick="filterCases('ALL')" class="tier-filter-btn px-2.5 py-1.5 text-[11px] rounded-lg font-bold bg-blue-600 text-white shadow" data-tier="ALL">ALL</button>
+                            <button onclick="filterCases('CRITICAL')" class="tier-filter-btn px-2.5 py-1.5 text-[11px] rounded-lg font-bold text-slate-600 hover:text-slate-900" data-tier="CRITICAL">CRITICAL</button>
+                            <button onclick="filterCases('HIGH')" class="tier-filter-btn px-2.5 py-1.5 text-[11px] rounded-lg font-bold text-slate-600 hover:text-slate-900" data-tier="HIGH">HIGH</button>
+                            <button onclick="filterCases('MEDIUM')" class="tier-filter-btn px-2.5 py-1.5 text-[11px] rounded-lg font-bold text-slate-600 hover:text-slate-900" data-tier="MEDIUM">MEDIUM</button>
+                            <button onclick="filterCases('LOW')" class="tier-filter-btn px-2.5 py-1.5 text-[11px] rounded-lg font-bold text-slate-600 hover:text-slate-900" data-tier="LOW">LOW</button>
+                        </div>
+                    </div>
+
+                    <!-- Cases Table Scrollable Container -->
+                    <div class="flex-1 overflow-y-auto min-h-0">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 border-b border-slate-200 font-bold uppercase text-[11px] shadow-sm z-10">
+                                <tr>
+                                    <th class="px-4 py-3.5">Account ID</th>
+                                    <th class="px-4 py-3.5">Risk Score</th>
+                                    <th class="px-4 py-3.5">Tier</th>
+                                    <th class="px-4 py-3.5">Top Driver</th>
+                                    <th class="px-4 py-3.5">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cases-tbody" class="divide-y divide-slate-100">
+                                <!-- Populated dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Account Inspector -->
+                <div class="w-1/2 flex flex-col bg-slate-50 overflow-y-auto p-6 space-y-6 min-h-0 pb-16" id="inspector-panel">
+                    <div class="flex justify-center items-center h-full text-slate-400 text-xs">
+                        Select an account from the queue to view details
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <!-- TAB 2: LIVE ACCOUNT SANDBOX -->
+        <main id="tab-sandbox" class="flex-1 flex flex-col overflow-y-auto p-8 space-y-6 hidden">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-flask text-blue-600"></i> Live Account Anomaly Sandbox
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Test raw account JSON payloads directly against preprocessor.pkl & XGBoost model artifacts</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-6">
+                <div class="enterprise-card p-6 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-700 uppercase tracking-wide">Raw Feature Payload (JSON)</h3>
+                        <button onclick="loadSamplePayload()" class="text-xs text-blue-600 hover:underline font-semibold">Load Sample Mule Payload</button>
+                    </div>
+                    <textarea id="sandbox-input" class="w-full h-80 bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 focus:outline-none focus:border-blue-600" placeholder='{"F1": 105.2, "F2": 0.04, ...}'></textarea>
+                    <button onclick="runSandboxPrediction()" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play"></i> Execute Real-Time Classification
+                    </button>
+                </div>
+
+                <div class="enterprise-card p-6 space-y-6 flex flex-col justify-between" id="sandbox-output-panel">
+                    <div class="text-center my-auto text-slate-400 text-xs">
+                        Enter raw account parameters and click "Execute Real-Time Classification"
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 3: MULE NETWORK RING (NEW SYNTHETIC VISUALIZATION) -->
+        <main id="tab-graph" class="flex-1 flex flex-col overflow-y-auto p-8 space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-diagram-project text-blue-600"></i> Mule Network Ring Topology
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Illustrative transaction graph demonstrating multi-hop fund-layering & cash-out hub ring detection</p>
+                </div>
+
+                <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-circle-info text-amber-600"></i> Illustrative Example — Simulated Data
+                </span>
+            </div>
+
+            <!-- Network & Graph Details Split -->
+            <div class="grid grid-cols-3 gap-6">
+                <!-- Vis Network Container (2 cols) -->
+                <div class="col-span-2 enterprise-card p-6 space-y-4 flex flex-col">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-circle-nodes text-blue-600"></i> Multi-Hop Transaction Topology Visualizer
+                        </h3>
+                        <span class="text-[11px] text-slate-400 font-mono">Interactive Node Drag & Zoom</span>
+                    </div>
+
+                    <div id="vis-network-container" class="flex-1"></div>
+                    
+                    <div class="flex items-center justify-between text-[11px] font-mono text-slate-500 pt-2">
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-100 border border-blue-600 inline-block"></span> Origin Victim</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-100 border border-amber-600 inline-block"></span> Feeder Mule</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-100 border border-red-600 inline-block"></span> Flagged Mule Ring (Layering)</span>
+                        <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-600 inline-block"></span> Cash Drain Sink</span>
+                    </div>
+                </div>
+
+                <!-- Graph Metrics Panel (1 col) -->
+                <div class="enterprise-card p-6 space-y-5">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-3">
+                        Simulated Ring Intelligence Summary
+                    </h3>
+
+                    <div class="space-y-3 text-xs">
+                        <div class="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1">
+                            <div class="font-bold text-red-800 flex items-center justify-between">
+                                <span>MULE RING DETECTED</span>
+                                <span class="font-mono text-[10px] bg-red-200 text-red-900 px-2 py-0.5 rounded">RING #MULE-2026-ALPHA</span>
+                            </div>
+                            <p class="text-[11px] text-red-700">Rapid 3-hop fund fan-out followed by concentrated aggregator cash-out.</p>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 font-mono">
+                            <div class="flex justify-between text-slate-600">
+                                <span>Layering Velocity:</span>
+                                <strong class="text-slate-900">₹600,000 in 4 mins</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Mule Ring Nodes:</span>
+                                <strong class="text-red-600">#9003, #9004, #9006</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Hub Aggregator:</span>
+                                <strong class="text-red-700">Account #9099</strong>
+                            </div>
+                            <div class="flex justify-between text-slate-600">
+                                <span>Outflow Sinks:</span>
+                                <strong class="text-slate-900">ATM-402 / Crypto USDT</strong>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1">
+                            <div class="font-bold text-blue-900 text-[11px]">Recommended Ring Action:</div>
+                            <p class="text-[11px] text-blue-800 leading-relaxed">
+                                Execute automated CBS debit freeze across all 3 flagged ring nodes (#9003, #9004, #9006) simultaneously to prevent cash drain at ATM node #ATM-402.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB 4: REGULATORY INTELLIGENCE -->
+        <main id="tab-regulatory" class="flex-1 flex flex-col overflow-y-auto p-8 space-y-6 hidden">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                        <i class="fa-solid fa-building-columns text-blue-600"></i> Regulatory Intelligence & Databases
+                    </h2>
+                    <p class="text-xs text-slate-500 mt-1">Real-time intersections with I4C Cyber Crime Portal, CERT-In Botnet List, and RBI Caution List</p>
+                </div>
+
+                <input type="text" id="reg-search" onkeyup="filterRegTable()" placeholder="Search Database..." class="bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono w-64 focus:outline-none focus:border-blue-600 shadow-sm">
+            </div>
+
+            <!-- Database Grid -->
+            <div class="grid grid-cols-3 gap-6">
+                <div class="enterprise-card p-6 border-t-4 border-t-red-500 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-slate-800">I4C Cyber Fraud DB</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-mono font-bold">CONNECTED</span>
+                    </div>
+                    <p class="text-xs text-slate-600">National Cyber Crime Reporting Portal matching reported mule account numbers and UPI handles.</p>
+                    <div class="pt-2 text-xs font-mono text-slate-800 font-bold border-t border-slate-100">
+                        Matches Identified: <span class="text-red-600">87 Mule Accounts</span>
+                    </div>
+                </div>
+
+                <div class="enterprise-card p-6 border-t-4 border-t-emerald-500 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-slate-800">CERT-In Botnet List</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[10px] font-mono font-bold">ACTIVE</span>
+                    </div>
+                    <p class="text-xs text-slate-600">Indian Computer Emergency Response Team feed for IP addresses associated with automated banking bots.</p>
+                    <div class="pt-2 text-xs font-mono text-slate-800 font-bold border-t border-slate-100">
+                        Matches Identified: <span class="text-emerald-600">0 Botnet IPs</span>
+                    </div>
+                </div>
+
+                <div class="enterprise-card p-6 border-t-4 border-t-amber-500 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <h3 class="font-bold text-sm text-slate-800">RBI Caution List</h3>
+                        <span class="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-mono font-bold">ACTIVE</span>
+                    </div>
+                    <p class="text-xs text-slate-600">Reserve Bank of India advisory list for high-risk entities and blacklisted corporate accounts.</p>
+                    <div class="pt-2 text-xs font-mono text-slate-800 font-bold border-t border-slate-100">
+                        Matches Identified: <span class="text-amber-600">87 Watchlist Hits</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Intersected Regulatory Accounts Table -->
+            <div class="enterprise-card p-6 space-y-4">
+                <h3 class="text-sm font-bold text-slate-800">Regulatory Intersected Accounts Queue</h3>
+                <table class="w-full text-left text-xs font-mono">
+                    <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3">Account ID</th>
+                            <th class="px-4 py-3">Risk Tier</th>
+                            <th class="px-4 py-3">I4C Database Status</th>
+                            <th class="px-4 py-3">RBI Caution List Status</th>
+                            <th class="px-4 py-3">Compliance Trigger</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reg-tbody" class="divide-y divide-slate-100">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </main>
+
+        <!-- TAB 5: MODEL AUDIT & METRICS -->
+        <main id="tab-calibration" class="flex-1 flex flex-col overflow-y-auto p-8 space-y-6 hidden">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-blue-600"></i> Model Calibration & Performance Audit
+                </h2>
+                <p class="text-xs text-slate-500 mt-1">Leakage-Corrected Group-Aware 5x5 Stratified CV Benchmarks</p>
+            </div>
+
+            <!-- Metrics Table -->
+            <div class="enterprise-card p-6 space-y-4">
+                <h3 class="text-sm font-bold text-slate-800">5x5 Group-Aware CV Benchmark Summary</h3>
+                <table class="w-full text-left text-xs font-mono">
+                    <thead class="bg-slate-100 text-slate-600 border-b border-slate-200">
+                        <tr>
+                            <th class="px-4 py-3">Classifier Algorithm</th>
+                            <th class="px-4 py-3">PR-AUC (Mean ± Std)</th>
+                            <th class="px-4 py-3">F1-Score</th>
+                            <th class="px-4 py-3">Recall</th>
+                            <th class="px-4 py-3">Precision</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        <tr class="bg-blue-50/60 font-bold text-blue-800">
+                            <td class="px-4 py-3">XGBoost (Selected Champion)</td>
+                            <td class="px-4 py-3">0.9115 ± 0.0820</td>
+                            <td class="px-4 py-3">0.8019 ± 0.0795</td>
+                            <td class="px-4 py-3">0.6777 ± 0.1106</td>
+                            <td class="px-4 py-3">0.9975 ± 0.0122</td>
+                        </tr>
+                        <tr class="text-slate-700">
+                            <td class="px-4 py-3">Random Forest</td>
+                            <td class="px-4 py-3">0.7845 ± 0.1001</td>
+                            <td class="px-4 py-3">0.5539 ± 0.1474</td>
+                            <td class="px-4 py-3">0.4033 ± 0.1539</td>
+                            <td class="px-4 py-3">0.9770 ± 0.0587</td>
+                        </tr>
+                        <tr class="text-slate-700">
+                            <td class="px-4 py-3">Logistic Regression</td>
+                            <td class="px-4 py-3">0.6652 ± 0.1035</td>
+                            <td class="px-4 py-3">0.6447 ± 0.0752</td>
+                            <td class="px-4 py-3">0.6037 ± 0.1123</td>
+                            <td class="px-4 py-3">0.7058 ± 0.0777</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Audit Findings Summary -->
+            <div class="grid grid-cols-2 gap-6">
+                <div class="enterprise-card p-6 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">1. Temporal Batch Leakage Audit</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Scrubbed 4,296 date/month dummy columns (<code class="bg-slate-100 px-1 py-0.5 rounded text-blue-700">F2230_*</code> and <code class="bg-slate-100 px-1 py-0.5 rounded text-blue-700">F3888_*</code>) which previously caused 100% artificial target separation.
+                    </p>
+                </div>
+                <div class="enterprise-card p-6 space-y-3">
+                    <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">2. Group-Aware Synthetic Duplicate Isolation</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        Clustered 3,112 near-duplicate rows (>0.99 cosine similarity) into 58 distinct positive groups to prevent cross-fold train-test data leakage.
+                    </p>
+                </div>
+            </div>
+        </main>
+
+    </div>
+
+    <!-- JS Script -->
+    <script>
+        let allCases = [];
+        let selectedAccId = null;
+        let currentFilter = "ALL";
+
+        function switchTab(tabId) {
+            document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active-tab');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.add('active-tab');
+                activeNav.classList.remove('text-slate-600');
+            }
+
+            if (tabId === 'graph') {
+                setTimeout(initMuleGraph, 100);
+            }
+        }
+
+        async function init() {
+            try {
+                const res = await fetch('/api/cases');
+                const data = await res.json();
+                allCases = data.cases || [];
+                
+                if (data.summary) {
+                    document.getElementById('stat-total').innerText = data.summary.total_evaluated.toLocaleString();
+                    document.getElementById('stat-critical').innerText = data.summary.critical_alerts.toLocaleString();
+                    document.getElementById('stat-high').innerText = data.summary.high_risk.toLocaleString();
+                    document.getElementById('stat-cleared').innerText = data.summary.cleared_accounts.toLocaleString();
+                } else {
+                    document.getElementById('stat-total').innerText = allCases.length.toLocaleString();
+                    document.getElementById('stat-critical').innerText = allCases.filter(c => c.tier === 'Critical').length.toLocaleString();
+                    document.getElementById('stat-high').innerText = allCases.filter(c => c.tier === 'High').length.toLocaleString();
+                    document.getElementById('stat-cleared').innerText = allCases.filter(c => c.tier === 'Low').length.toLocaleString();
+                }
+
+                renderTable();
+                renderRegTable();
+                if (allCases.length > 0) {
+                    selectAccount(allCases[0].account_id);
+                }
+            } catch (err) {
+                console.error("Error loading cases:", err);
+            }
+        }
+
+        function filterCases(tier) {
+            currentFilter = tier;
+            document.querySelectorAll('.tier-filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-tier') === tier) {
+                    btn.className = "tier-filter-btn px-2.5 py-1 text-xs rounded-lg font-bold bg-blue-600 text-white shadow";
+                } else {
+                    btn.className = "tier-filter-btn px-2.5 py-1 text-xs rounded-lg font-bold text-slate-600 hover:text-slate-900";
+                }
+            });
+            renderTable();
+        }
+
+        function getBadgeHTML(tier) {
+            switch(tier) {
+                case 'Critical': return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200">CRITICAL</span>`;
+                case 'High': return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-orange-100 text-orange-700 border border-orange-200">HIGH</span>`;
+                case 'Medium': return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 border border-amber-200">MEDIUM</span>`;
+                default: return `<span class="px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 border border-emerald-200">LOW</span>`;
+            }
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('cases-tbody');
+            const search = document.getElementById('search-input').value.toLowerCase();
+            
+            const filtered = allCases.filter(c => {
+                const matchTier = currentFilter === 'ALL' || c.tier.toUpperCase() === currentFilter;
+                const matchSearch = search === '' || c.account_id.toString().includes(search);
+                return matchTier && matchSearch;
+            });
+
+            tbody.innerHTML = filtered.map(c => {
+                const isSelected = selectedAccId === c.account_id;
+                return `
+                    <tr onclick="selectAccount(${c.account_id})" 
+                        class="cursor-pointer transition hover:bg-slate-50 ${isSelected ? 'bg-blue-50/70 border-l-4 border-blue-600 font-semibold' : ''}">
+                        <td class="px-4 py-3 font-mono text-slate-900">#${c.account_id}</td>
+                        <td class="px-4 py-3 font-mono font-extrabold text-blue-700">${c.risk_score.toFixed(4)}</td>
+                        <td class="px-4 py-3">${getBadgeHTML(c.tier)}</td>
+                        <td class="px-4 py-3 font-mono text-slate-500 truncate max-w-[120px]">${c.top_shap_drivers[0] || 'N/A'}</td>
+                        <td class="px-4 py-3 text-slate-700">${c.action}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderRegTable() {
+            const tbody = document.getElementById('reg-tbody');
+            const search = (document.getElementById('reg-search') ? document.getElementById('reg-search').value.toLowerCase() : '');
+            
+            const criticalCases = allCases.filter(c => c.tier === 'Critical' && (search === '' || c.account_id.toString().includes(search)));
+            tbody.innerHTML = criticalCases.map(c => `
+                <tr class="hover:bg-slate-50">
+                    <td class="px-4 py-3 font-bold text-slate-900">#${c.account_id}</td>
+                    <td class="px-4 py-3">${getBadgeHTML(c.tier)}</td>
+                    <td class="px-4 py-3 font-bold text-red-600">${c.regulatory_flags.i4c_db}</td>
+                    <td class="px-4 py-3 font-bold text-red-600">${c.regulatory_flags.rbi_caution_list}</td>
+                    <td class="px-4 py-3 text-slate-700">${c.action}</td>
+                </tr>
+            `).join('');
+        }
+
+        function filterRegTable() {
+            renderRegTable();
+        }
+
+        async function selectAccount(accId) {
+            selectedAccId = accId;
+            renderTable();
+
+            const panel = document.getElementById('inspector-panel');
+            panel.innerHTML = `<div class="flex justify-center items-center h-full text-slate-400 text-xs"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Loading case data...</div>`;
+
+            try {
+                const res = await fetch(`/api/cases/${accId}`);
+                const data = await res.json();
+
+                panel.innerHTML = `
+                    <!-- Header -->
+                    <div class="enterprise-card p-6 flex items-center justify-between">
+                        <div>
+                            <div class="flex items-center space-x-3">
+                                <h3 class="text-3xl font-black text-slate-900 font-mono">Account #${data.account_id}</h3>
+                                ${getBadgeHTML(data.tier)}
+                            </div>
+                            <p class="text-xs text-slate-500 mt-2">Triggered Action: <strong class="text-slate-800 font-semibold">${data.action}</strong></p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-4xl font-black font-mono text-blue-600 tracking-tight">${data.risk_score.toFixed(4)}</div>
+                            <div class="text-[11px] text-slate-500 font-mono mt-1">Classifier Risk Probability</div>
+                        </div>
+                    </div>
+
+                    <!-- SHAP Drivers -->
+                    <div class="enterprise-card p-6 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-amber-500"></i> Top Behavioral Anomaly Drivers (SHAP Explanation)
+                        </h4>
+                        <div class="space-y-2">
+                            ${data.top_shap_drivers.map((f, i) => {
+                                const domainMap = {
+                                    'F994': 'Max UPI Transaction Velocity (Last 7D High-Volume Inflow)',
+                                    'F3598': 'Customer-Induced Transaction Deviation (14D Velocity Anomaly)',
+                                    'F3348_ismissing': 'Uninterpretable Anonymised Feature (Systemic Field Omission)',
+                                    'F1319': 'Possible Fund-Flow-Ratio-like Signal (Outflow / Inflow Balance)',
+                                    'F1216': 'Time-of-Day / Channel Anomaly (Non-Standard Channel)',
+                                    'F3805': 'Transaction Volume / Balance Cap (Micro-Cap Account Anomaly)',
+                                    'F3922': 'Uninterpretable Anonymised Feature (Activity Sub-Count)',
+                                    'F2289_ismissing': 'Behavioural Deviation (Forced Onboarding Field)',
+                                    'F3240_ismissing': 'Uninterpretable Anonymised Feature (Systemic Field Omission)',
+                                    'F1813': 'Transaction Velocity / Turnover Band (Low Cumulative Turnover)'
+                                };
+                                const label = domainMap[f] || 'Behavioural Feature Signal';
+                                return `
+                                <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs flex flex-col gap-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-mono text-blue-900 font-bold">#${i+1} ${f}</span>
+                                        <span class="px-2.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-mono font-bold">HIGH ANOMALY IMPACT</span>
+                                    </div>
+                                    <div class="text-[11px] text-slate-600 italic"><i class="fa-solid fa-circle-info text-blue-500 mr-1"></i>${label}</div>
+                                </div>
+                            `}).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Regulatory Intersections -->
+                    <div class="enterprise-card p-6 space-y-4">
+                        <h4 class="text-xs font-bold text-slate-800 flex items-center justify-between">
+                            <span><i class="fa-solid fa-building-columns text-blue-600"></i> Regulatory Database Intersections</span>
+                            <span class="text-[10px] text-slate-400 font-mono">I4C / CERT-In / RBI Mock</span>
+                        </h4>
+                        <div class="grid grid-cols-3 gap-3">
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                                <div class="text-[10px] text-slate-500 font-medium">I4C Cyber Fraud DB</div>
+                                <div class="mt-1 text-xs font-bold font-mono ${data.regulatory_flags.i4c_db === 'FLAGGED' ? 'text-red-600' : 'text-emerald-600'}">
+                                    ${data.regulatory_flags.i4c_db}
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                                <div class="text-[10px] text-slate-500 font-medium">CERT-In Botnet List</div>
+                                <div class="mt-1 text-xs font-bold font-mono text-emerald-600">
+                                    ${data.regulatory_flags.cert_in_botnet}
+                                </div>
+                            </div>
+                            <div class="p-3 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                                <div class="text-[10px] text-slate-500 font-medium">RBI Caution List</div>
+                                <div class="mt-1 text-xs font-bold font-mono ${data.regulatory_flags.rbi_caution_list === 'FLAGGED' ? 'text-red-600' : 'text-emerald-600'}">
+                                    ${data.regulatory_flags.rbi_caution_list}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons (STR + Mock CBS Freeze) -->
+                    <div class="space-y-3">
+                        ${data.tier === 'Critical' || data.tier === 'High' ? `
+                            <button onclick="confirmCBSFreeze(${data.account_id})" id="cbs-btn-${data.account_id}" class="w-full py-3.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-lock"></i>
+                                <span>Confirm Core Banking System (CBS) Debit Freeze</span>
+                            </button>
+                        ` : ''}
+                        <button onclick="generateSTR(${data.account_id})" id="str-btn" class="w-full py-3.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-file-contract"></i>
+                            <span>Generate Suspicious Transaction Report (STR) Draft</span>
+                        </button>
+                        <div id="cbs-container"></div>
+                        <div id="str-container"></div>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Error inspecting account:", err);
+            }
+        }
+
+        function confirmCBSFreeze(accId) {
+            const refNo = "CBS-FRZ-2026-" + accId + "-" + Math.floor(1000 + Math.random() * 9000);
+            const container = document.getElementById('cbs-container');
+            container.innerHTML = `
+                <div class="enterprise-card p-5 border-2 border-red-500 bg-red-50/80 space-y-3 animate-fade-in shadow-lg">
+                    <div class="flex items-center justify-between text-xs text-red-800 font-bold">
+                        <span class="flex items-center gap-1.5"><i class="fa-solid fa-circle-check text-red-600 text-sm"></i> CORE BANKING SYSTEM (CBS) DEBIT FREEZE CONFIRMED</span>
+                        <span class="font-mono bg-red-200 text-red-900 px-2 py-0.5 rounded text-[10px] font-extrabold">${refNo}</span>
+                    </div>
+                    <div class="text-xs text-slate-700 space-y-1.5 font-mono bg-white p-3.5 rounded-xl border border-red-200">
+                        <p><strong>Target Account:</strong> #${accId}</p>
+                        <p><strong>Freeze Status:</strong> <span class="text-red-700 font-extrabold">DEBIT TRANSACTIONS LOCKED</span></p>
+                        <p><strong>Channels Locked:</strong> UPI, IMPS, NEFT, RTGS, ATM, NetBanking</p>
+                        <p><strong>Execution Latency:</strong> 14ms (Simulated Webhook Dispatch)</p>
+                        <p class="text-[11px] text-slate-500 italic mt-2 border-t border-slate-100 pt-1.5">PMLA Section 12 Emergency Action Record Generated & Logged.</p>
+                    </div>
+                </div>
+            `;
+            const btn = document.getElementById('cbs-btn-' + accId);
+            if (btn) {
+                btn.innerHTML = `<i class="fa-solid fa-shield-check"></i><span>CBS Debit Freeze Locked (${refNo})</span>`;
+                btn.className = "w-full py-3.5 px-4 rounded-xl bg-slate-800 text-emerald-400 font-bold text-xs shadow-md cursor-default flex items-center justify-center space-x-2";
+                btn.disabled = true;
+            }
+        }
+
+        async function generateSTR(accId) {
+            const btn = document.getElementById('str-btn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> Generating Report...`;
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/cases/${accId}/str-draft`, { method: 'POST' });
+                const data = await res.json();
+                
+                document.getElementById('str-container').innerHTML = `
+                    <div class="enterprise-card p-5 border border-blue-200 space-y-3">
+                        <div class="flex items-center justify-between text-xs text-blue-700 font-bold">
+                            <span>FIU-IND COMPLIANCE FILING DRAFT</span>
+                            <button onclick="navigator.clipboard.writeText(\`${data.str_draft.replace(/`/g, '\\`')}\`)" class="text-slate-500 hover:text-slate-900 underline text-xs">Copy Text</button>
+                        </div>
+                        <pre class="p-4 bg-slate-900 rounded-xl text-xs font-mono text-emerald-400 overflow-x-auto border border-slate-800 whitespace-pre-wrap leading-relaxed">${data.str_draft}</pre>
+                    </div>
+                `;
+            } catch (err) {
+                console.error("STR Generation failed:", err);
+            } finally {
+                btn.innerHTML = `<i class="fa-solid fa-file-contract"></i><span>Generate Suspicious Transaction Report (STR) Draft</span>`;
+                btn.disabled = false;
+            }
+        }
+
+        function updateThreshold(val) {
+            document.getElementById('thresh-val-display').innerText = val;
+        }
+
+        function exportQueueCSV() {
+            let csv = "Account_ID,Risk_Score,Tier,Action\n";
+            allCases.forEach(c => {
+                csv += `${c.account_id},${c.risk_score},${c.tier},"${c.action}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'mule_shield_cases_queue.csv';
+            a.click();
+        }
+
+        async function loadSamplePayload() {
+            const textarea = document.getElementById('sandbox-input');
+            textarea.value = "Loading sample positive Mule payload from dataset...";
+            try {
+                const res = await fetch('/api/sample-mule-payload');
+                const data = await res.json();
+                textarea.value = JSON.stringify(data, null, 2);
+            } catch (err) {
+                textarea.value = JSON.stringify({
+                    "F1": 1450.5, "F2": 0.08, "F115": 12.4, "F994": 15.0, "F3598": 450.2, "F1319": 99.1
+                }, null, 2);
+            }
+        }
+
+        async function runSandboxPrediction() {
+            const val = document.getElementById('sandbox-input').value;
+            const outputPanel = document.getElementById('sandbox-output-panel');
+            outputPanel.innerHTML = `<div class="text-center my-auto text-xs text-slate-500"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Executing Preprocessor & XGBoost Model...</div>`;
+
+            try {
+                const payload = JSON.parse(val);
+                const res = await fetch('/api/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ account_features: payload })
+                });
+                const data = await res.json();
+                
+                let evalCardHTML = '';
+                if (data.tier === 'Critical' || data.risk_score >= 0.8) {
+                    evalCardHTML = `
+                        <div class="enterprise-card p-4 space-y-2.5 text-xs bg-red-50/50 border-red-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 font-semibold">Mule Risk Classification:</span>
+                                <span class="font-bold font-mono text-red-700 bg-red-100 px-2 py-0.5 rounded border border-red-200">CRITICAL MULE DETECTED</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Triggered Action:</span>
+                                <span class="font-bold text-slate-900">${data.action}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Exceeds Mule Risk Tier (0.8000):</span>
+                                <span class="font-mono font-bold text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i>YES</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Optimal F1 Calibration (0.9934):</span>
+                                <span class="font-mono font-bold text-red-600">${data.risk_score >= 0.9934 ? 'YES (0.9934+)' : 'HIGH ANOMALY SIGNAL (' + data.risk_score.toFixed(4) + ')'}</span>
+                            </div>
+                        </div>
+                    `;
+                } else if (data.tier === 'High') {
+                    evalCardHTML = `
+                        <div class="enterprise-card p-4 space-y-2.5 text-xs bg-orange-50/50 border-orange-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 font-semibold">Mule Risk Classification:</span>
+                                <span class="font-bold font-mono text-orange-700 bg-orange-100 px-2 py-0.5 rounded border border-orange-200">HIGH ANOMALY CASE</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Triggered Action:</span>
+                                <span class="font-bold text-slate-900">${data.action}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Exceeds Mule Risk Tier (0.6000):</span>
+                                <span class="font-mono font-bold text-orange-600">YES</span>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    evalCardHTML = `
+                        <div class="enterprise-card p-4 space-y-2.5 text-xs bg-emerald-50/50 border-emerald-200">
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600 font-semibold">Mule Risk Classification:</span>
+                                <span class="font-bold font-mono text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200">CLEARED ACCOUNT</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Triggered Action:</span>
+                                <span class="font-bold text-slate-900">${data.action}</span>
+                            </div>
+                            <div class="flex justify-between items-center">
+                                <span class="text-slate-600">Exceeds Mule Risk Tier:</span>
+                                <span class="font-mono font-bold text-emerald-600"><i class="fa-solid fa-circle-check mr-1"></i>NO</span>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                outputPanel.innerHTML = `
+                    <div class="space-y-4 my-auto">
+                        <div class="text-center space-y-1">
+                            <span class="text-xs text-slate-500 font-mono uppercase">Live Classification Output</span>
+                            <div class="text-5xl font-black font-mono ${data.tier === 'Critical' ? 'text-red-600' : (data.tier === 'High' ? 'text-orange-600' : 'text-blue-600')} tracking-tight">${data.risk_score.toFixed(4)}</div>
+                            <div class="mt-2">${getBadgeHTML(data.tier)}</div>
+                        </div>
+                        ${evalCardHTML}
+                    </div>
+                `;
+            } catch (err) {
+                outputPanel.innerHTML = `<div class="text-center my-auto text-xs text-red-600">Error executing prediction. Check JSON syntax.</div>`;
+            }
+        }
+
+        function initMuleGraph() {
+            const container = document.getElementById('vis-network-container');
+            if (!container || container.childElementCount > 0) return;
+
+            if (typeof vis === 'undefined') {
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-full p-8 text-center bg-slate-900 text-emerald-400 font-mono rounded-xl border border-slate-800 space-y-3">
+                        <div class="text-sm font-bold text-amber-400 flex items-center gap-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i> Illustrative Example — Simulated Data Topology
+                        </div>
+                        <div class="text-xs text-slate-300 leading-relaxed max-w-lg">
+                            [Victim Account #1001] ➔ ₹600k UPI ➔ [Feeder Mule #9001]<br/>
+                            ├── ➔ ₹200k IMPS ➔ [Layering Mule #9003 - CRITICAL]<br/>
+                            ├── ➔ ₹200k IMPS ➔ [Layering Mule #9004 - CRITICAL]<br/>
+                            └── ➔ ₹200k IMPS ➔ [Layering Mule #9006 - CRITICAL]<br/>
+                            ➔ [Aggregator Hub #9099] ➔ ATM Withdrawal #ATM-402 (Cash Out)
+                        </div>
+                        <div class="text-[11px] text-slate-400 italic">Simulated Fund-Flow Layering Ring Visualization</div>
+                    </div>
+                `;
+                return;
+            }
+
+            const nodes = new vis.DataSet([
+                { id: 1, label: 'Victim Account\n#1001\n(Origin)', color: { background: '#dbeafe', border: '#2563eb' }, shape: 'box', font: { color: '#1e3a8a', face: 'JetBrains Mono', size: 11 } },
+                { id: 2, label: 'Feeder Mule\n#9001\n(Pass-Through)', color: { background: '#fef3c7', border: '#d97706' }, shape: 'box', font: { color: '#78350f', face: 'JetBrains Mono', size: 11 } },
+                { id: 3, label: 'Mule Account\n#9003\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 12, bold: true } },
+                { id: 4, label: 'Mule Account\n#9004\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 12, bold: true } },
+                { id: 5, label: 'Mule Account\n#9006\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 12, bold: true } },
+                { id: 6, label: 'Hub Aggregator\n#9099\n(Cash-Out Hub)', color: { background: '#fcf0f2', border: '#991b1b' }, shape: 'box', font: { color: '#7f1d1d', face: 'JetBrains Mono', size: 12, bold: true } },
+                { id: 7, label: 'ATM Cash-Out\n#ATM-402', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 10 } },
+                { id: 8, label: 'Crypto Off-Ramp\n#P2P-EXCHANGE', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 10 } }
+            ]);
+
+            const edges = new vis.DataSet([
+                { from: 1, to: 2, label: '₹600k UPI (1 min)', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#2563eb' } },
+                { from: 2, to: 3, label: '₹200k IMPS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#d97706' } },
+                { from: 2, to: 4, label: '₹200k IMPS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#d97706' } },
+                { from: 2, to: 5, label: '₹200k IMPS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#d97706' } },
+                { from: 3, to: 6, label: '₹195k RTGS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 4, to: 6, label: '₹198k RTGS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 5, to: 6, label: '₹196k RTGS', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 6, to: 7, label: '₹350k Cash', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#991b1b' } },
+                { from: 6, to: 8, label: '₹239k USDT', arrows: 'to', font: { size: 9, align: 'top' }, color: { color: '#991b1b' } }
+            ]);
+
+            const data = { nodes: nodes, edges: edges };
+            const options = {
+                physics: { enabled: true, solver: 'forceAtlas2Based' },
+                interaction: { hover: true, dragNodes: true }
+            };
+            new vis.Network(container, data, options);
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>

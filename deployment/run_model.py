@@ -7,7 +7,9 @@ import xgboost as xgb
 import sys
 
 # Ensure modeling preprocessor module is accessible
-sys.path.append('.')
+base_dir = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(base_dir)
+sys.path.append(os.path.abspath(os.path.join(base_dir, '..')))
 from modeling.preprocessor import MuleShieldPreprocessor
 
 def main():
@@ -16,10 +18,14 @@ def main():
     print("====================================================")
 
     # 1. Paths to Production Artifacts
-    model_path = 'modeling/mule_shield_model.json'
-    preprocessor_path = 'modeling/preprocessor.pkl'
-    config_path = 'modeling/model_config.json'
-    data_path = 'data/data_copy.csv' if os.path.exists('data/data_copy.csv') else 'data_copy.csv'
+    model_dir = os.path.join(base_dir, 'modeling') if os.path.exists(os.path.join(base_dir, 'modeling')) else 'modeling'
+    model_path = os.path.join(model_dir, 'mule_shield_model.json')
+    preprocessor_path = os.path.join(model_dir, 'preprocessor.pkl')
+    config_path = os.path.join(model_dir, 'model_config.json')
+    
+    data_path = os.path.join(base_dir, 'sample_data.csv')
+    if not os.path.exists(data_path):
+        data_path = os.path.join(base_dir, '..', 'data', 'data_copy.csv')
 
     # 2. Load Saved Production Artifacts
     print("\n[1/4] Loading production artifacts from modeling/...")
@@ -82,10 +88,10 @@ def main():
     print("\n====================================================")
     print("            PREDICTION RESULTS SUMMARY              ")
     print("====================================================")
-    print(f"Total Accounts Evaluated:   {len(results_df)}")
-    print(f"Critical Risk Mules (>=0.8): {sum(results_df['Risk_Tier'] == 'Critical')}")
-    print(f"High Risk Cases (0.6-0.79):  {sum(results_df['Risk_Tier'] == 'High')}")
-    print(f"Cleared Low Risk Accounts:   {sum(results_df['Risk_Tier'] == 'Low')}")
+    print(f"Total Accounts Evaluated:    {len(results_df)}")
+    print(f"Critical Risk Mules (>=0.8):  {sum(results_df['Risk_Tier'] == 'Critical')}")
+    print(f"High Risk Cases (0.6-0.79):   {sum(results_df['Risk_Tier'] == 'High')}")
+    print(f"Cleared Low Risk Accounts:    {sum(results_df['Risk_Tier'] == 'Low')}")
 
     print("\nSample Top 15 Flagged Accounts:")
     critical_sample = results_df.sort_values(by='Risk_Score', ascending=False).head(15)

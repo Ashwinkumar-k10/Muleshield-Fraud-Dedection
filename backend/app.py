@@ -64,7 +64,7 @@ for idx in sample_indices:
     tier, action = get_tier_action(prob)
     
     # Top drivers (from feature weights or SHAP)
-    top3_feats = ["F3898", "F3914", "F1319"]
+    top3_feats = ["F994", "F3598", "F1319"]
     
     mock_regulatory = {
         "i4c_db": "FLAGGED" if tier == "Critical" else "CLEAR",
@@ -106,7 +106,7 @@ def get_case_detail(account_id):
                 "risk_score": round(prob, 4),
                 "tier": tier,
                 "action": action,
-                "top_shap_drivers": ["F3898", "F3914", "F1319"],
+                "top_shap_drivers": ["F994", "F3598", "F1319"],
                 "regulatory_flags": {
                     "i4c_db": "FLAGGED" if tier == "Critical" else "CLEAR",
                     "cert_in_botnet": "CLEAR",

@@ -1,1 +1,0 @@
-{"groups": {"total_groups": 6158, "raw_pos": 81, "distinct_pos": 58}, "with_missing": {"pr_auc": [1.0, 1.1102230246251565e-16], "f1": [1.0, 0.0], "recall": [1.0, 0.0], "precision": [1.0, 0.0]}, "without_missing": {"pr_auc": [1.0, 6.661338147750939e-17], "f1": [1.0, 0.0], "recall": [1.0, 0.0], "precision": [1.0, 0.0]}}

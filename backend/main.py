@@ -12,9 +12,11 @@ CORS(app)
 
 from flask import send_from_directory
 
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+
 @app.route("/", methods=["GET"])
 def read_root():
-    return send_from_directory("static", "index.html")
+    return send_from_directory(FRONTEND_DIR, "index.html")
 
 @app.route("/api/cases", methods=["GET"])
 def get_all_cases():

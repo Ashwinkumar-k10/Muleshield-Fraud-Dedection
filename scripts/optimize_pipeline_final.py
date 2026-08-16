@@ -27,8 +27,8 @@ def main():
     print_p("==========================================================================")
     
     # 1. Load Data & Excel Mapping
-    raw_csv_path = 'data_copy.csv'
-    excel_path = 'Description.xlsx'
+    raw_csv_path = os.path.join('data', 'data_copy.csv') if os.path.exists(os.path.join('data', 'data_copy.csv')) else 'data_copy.csv'
+    excel_path = os.path.join('data', 'Description.xlsx') if os.path.exists(os.path.join('data', 'Description.xlsx')) else 'Description.xlsx'
     
     print_p(f"Loading raw dataset from {raw_csv_path}...")
     df_raw = pd.read_csv(raw_csv_path, engine='pyarrow')

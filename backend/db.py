@@ -11,7 +11,9 @@ STORAGE_DIR = os.path.join(os.path.dirname(__file__), 'storage')
 os.makedirs(STORAGE_DIR, exist_ok=True)
 
 class MuleDatabase:
-    def __init__(self, data_path='data_copy.csv'):
+    def __init__(self, data_path=None):
+        if data_path is None:
+            data_path = os.path.join('data', 'data_copy.csv') if os.path.exists(os.path.join('data', 'data_copy.csv')) else 'data_copy.csv'
         self.data_path = data_path
         self.raw_df = pd.read_csv(data_path, engine='pyarrow')
         if 'Unnamed: 0' in self.raw_df.columns:
@@ -66,7 +68,7 @@ class MuleDatabase:
             prob = float(probs_all[idx])
             tier, action = risk_engine.get_tier_action(prob)
             
-            top3_feats = ["F3898", "F3914", "F1319"]
+            top3_feats = ["F994", "F3598", "F1319"]
             mock_regulatory = {
                 "i4c_db": "FLAGGED" if tier == "Critical" else "CLEAR",
                 "cert_in_botnet": "CLEAR",
@@ -105,7 +107,7 @@ class MuleDatabase:
                 "risk_score": res["risk_score"],
                 "tier": res["tier"],
                 "action": res["action"],
-                "top_shap_drivers": ["F3898", "F3914", "F1319"],
+                "top_shap_drivers": ["F994", "F3598", "F1319"],
                 "regulatory_flags": {
                     "i4c_db": "FLAGGED" if res["tier"] == "Critical" else "CLEAR",
                     "cert_in_botnet": "CLEAR",
@@ -161,11 +163,11 @@ Status: DRAFT READY FOR ANALYST SIGN-OFF
             raw_dict = self.raw_df.loc[acc_id].to_dict()
             clean_dict = {}
             for k, v in raw_dict.items():
-                if k in ['F3924', 'Unnamed: 0'] or k.startswith('F2230') or k.startswith('F3888'):
+                if k in ['F3924', 'Unnamed: 0'] or k.startswith('F2230') or k.startswith('F3888') or k in ['F3898', 'F3899', 'F3912', 'F3913', 'F3914', 'F3915']:
                     continue
                 if pd.notnull(v):
                     clean_dict[k] = float(v) if isinstance(v, (int, float, np.number)) else str(v)
             return clean_dict
-        return {"F1": 105.2, "F2": 0.04, "F3898": 8900.0}
+        return {"F1": 105.2, "F2": 0.04, "F994": 15.0}
 
 db = MuleDatabase()

@@ -1,6 +1,6 @@
 # Large Data Files (>100MB limit on GitHub)
-data_copy.csv
-muleshield_deploy_pack/sample_data.csv
+data/data_copy.csv
+deployment/sample_data.csv
 data/*.parquet
 data/*.npy
 
