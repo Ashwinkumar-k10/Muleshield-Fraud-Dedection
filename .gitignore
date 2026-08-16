@@ -1,9 +1,3 @@
-# Large Data Files (>100MB limit on GitHub)
-data/data_copy.csv
-deployment/sample_data.csv
-data/*.parquet
-data/*.npy
-
 # Node & Next.js Build Artifacts
 frontend/node_modules/
 frontend/.next/
