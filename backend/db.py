@@ -20,8 +20,8 @@ class MuleDatabase:
             self.raw_df = self.raw_df.drop(columns=['Unnamed: 0'])
             
         try:
-            self.shap_values = np.load('shap_values_clean.npy')
-            self.X_test_clean = pd.read_parquet('X_test_clean.parquet')
+            shap_path = os.path.join('data', 'shap_values_clean.npy') if os.path.exists(os.path.join('data', 'shap_values_clean.npy')) else 'shap_values_clean.npy'
+            self.shap_values = np.load(shap_path)
             self.has_test_cache = True
         except Exception:
             self.has_test_cache = False
