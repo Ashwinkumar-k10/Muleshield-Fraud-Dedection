@@ -68,7 +68,7 @@
         <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-xs font-mono">
                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                <span class="text-slate-600 font-semibold">XGBoost Engine (0.9115 PR-AUC)</span>
+                <span class="text-slate-600 font-semibold">XGBoost Engine (0.8807 PR-AUC)</span>
             </div>
 
             <button onclick="exportQueueCSV()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-2 shadow-sm">
@@ -114,9 +114,9 @@
                 <div class="enterprise-card p-3 text-xs space-y-2">
                     <div class="flex justify-between font-mono text-[11px]">
                         <span class="text-slate-500 font-medium">DECISION THRESHOLD</span>
-                        <span id="thresh-val-display" class="font-bold text-blue-600">0.9934</span>
+                        <span id="thresh-val-display" class="font-bold text-blue-600">0.9899</span>
                     </div>
-                    <input type="range" min="0.50" max="0.999" step="0.001" value="0.9934" oninput="updateThreshold(this.value)" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                    <input type="range" min="0.50" max="0.999" step="0.001" value="0.9899" oninput="updateThreshold(this.value)" class="w-full h-1.5 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
                 </div>
 
                 <div class="text-center">
@@ -810,8 +810,8 @@
                                 <span class="font-mono font-bold text-red-600"><i class="fa-solid fa-triangle-exclamation mr-1"></i>YES</span>
                             </div>
                             <div class="flex justify-between items-center">
-                                <span class="text-slate-600">Optimal F1 Calibration (0.9934):</span>
-                                <span class="font-mono font-bold text-red-600">${data.risk_score >= 0.9934 ? 'YES (0.9934+)' : 'HIGH ANOMALY SIGNAL (' + data.risk_score.toFixed(4) + ')'}</span>
+                                <span class="text-slate-600">Optimal F1 Calibration (0.9899):</span>
+                                <span class="font-mono font-bold text-red-600">${data.risk_score >= 0.9899 ? 'YES (0.9899+)' : 'HIGH ANOMALY SIGNAL (' + data.risk_score.toFixed(4) + ')'}</span>
                             </div>
                         </div>
                     `;
