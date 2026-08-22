@@ -30,13 +30,14 @@ This document explains the entire **MuleShield PRO** system from initial raw dat
  └────────────────────────────────────────────┬────────────────────────────────────────────┘
                                               │
  ┌────────────────────────────────────────────┴────────────────────────────────────────────┐
- │ STAGE 3: MODEL TRAINING & VALIDATION (Steps 10 - 15)                                    │
+ │ STAGE 3: MODEL TRAINING, TUNING & CV EVALUATION (Steps 10 - 15)                       │
  │ 10. Execute 5-Fold Group CV (Isolate 6,118 clusters across 5 folds).                    │
  │ 11. Oversample Training Folds (Apply SMOTE strictly inside train fold loop).             │
  │ 12. Train XGBoost Classifier (tree_method='hist', max_depth=3, L1=0.1, L2=1.0).          │
- │ 13. Optimize Hyperparameters (Grid Search Champion 0.8833 ± 0.0365).             │
- │ 14. Calibrate Decision Threshold (Tuned to 0.9899 on validation folds).                  │
- │ 15. Serialize Model Artifacts (`mule_shield_model.json`, `preprocessor.pkl`).             │
+ │ 13. Optimize Hyperparameters (Grid Search Champion 0.8833 ± 0.0365).                     │
+ │ 14. Perform Verified 5-Fold Group CV Evaluation (Verified CV: 0.8807 ± 0.0403 PR-AUC).   │
+ │ 15. Calibrate Decision Threshold (Tuned to 0.9899: 100% Precision, 61.64% Recall).       │
+ │ 16. Serialize Model Artifacts (`mule_shield_model.json`, `preprocessor.pkl`).             │
  └────────────────────────────────────────────┬────────────────────────────────────────────┘
                                               │
  ┌────────────────────────────────────────────┴────────────────────────────────────────────┐

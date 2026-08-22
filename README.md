@@ -1,34 +1,35 @@
-# 🛡️ MuleShield PRO — Enterprise AI/ML Mule Account & Fraud Layering Detection Platform
+# MuleShield PRO — Enterprise AI/ML Mule Account & Fraud Layering Detection Platform
 **PSB CyberShield Grand Finale 2026 Submission**
 
 [![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
 [![XGBoost Champion](https://img.shields.io/badge/Model-XGBoost%20Classifier-emerald.svg)](modeling/mule_shield_model.json)
-[![Precision Benchmark](https://img.shields.io/badge/Validation%20Precision-100%25-brightgreen.svg)](docs/12_MODEL_EVALUATION.md)
+[![Validation Precision](https://img.shields.io/badge/Validation%20Precision-100%25-brightgreen.svg)](docs/12_MODEL_EVALUATION.md)
 [![PR-AUC CV](https://img.shields.io/badge/PR--AUC-0.8807%20%C2%B1%200.0403-gold.svg)](docs/11_VALIDATION_STRATEGY.md)
 [![Regulatory Alignment](https://img.shields.io/badge/Compliance-PMLA%20Sec%2012%20%7C%20RBI-blueviolet.svg)](docs/27_SECURITY_AND_COMPLIANCE.md)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-> **Executive Summary:** MuleShield PRO is a production-grade AI-powered financial risk engine engineered specifically for Public Sector Banks (PSBs) to detect mule accounts, halt fraudulent fund-layering syndicates, and automate FIU-IND regulatory reporting in real time. Built upon an uncompromised, zero-leakage XGBoost classifier ($0.8807 \pm 0.0403$ PR-AUC across 5-Fold Group CV), MuleShield PRO delivers **100% Precision on validation folds** to eliminate false debit locks on legitimate banking customers while achieving rapid operational response.
+> **Executive Summary:** MuleShield PRO is an explainable AI-powered financial risk engine engineered specifically for Public Sector Banks (PSBs) to detect mule accounts, halt fraudulent fund-layering syndicates, and automate FIU-IND regulatory reporting in real time. Built upon an uncompromised, zero-leakage XGBoost classifier ($0.8807 \pm 0.0403$ PR-AUC across 5-Fold Group CV), MuleShield PRO delivers **100% Precision on validation folds** to eliminate false debit locks on legitimate banking customers while achieving rapid operational response.
 
 ---
 
-## 📑 Quick Links & Navigation Index
+## Quick Links & Navigation Index
 
 | Resource Section | Direct Link | Key Technical Highlights |
 | :--- | :--- | :--- |
-| **📚 Master Documentation Package** | [`docs/README.md`](docs/README.md) | 32 comprehensive architectural manuals & guides |
-| **📑 Final Technical Report** | [`report/final_report.md`](report/final_report.md) | 6-section solution paper & forensic leak audit |
-| **🔬 Internal Review Committee Audit** | [`report/internal_technical_review_audit.md`](report/internal_technical_review_audit.md) | 17-stage MLOps, MLDD & banking audit matrix |
-| **🏗️ Architectural Deep-Dive** | [`report/production_readiness_architectural_audit.md`](report/production_readiness_architectural_audit.md) | System data-flow & API component mapping |
-| **🛡️ Pre-Submission Integrity Audit** | [`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md) | 14-point pre-submission pass/fail verification |
+| **Master Documentation Package** | [`docs/README.md`](docs/README.md) | 32 comprehensive architectural manuals & guides |
+| **Final Technical Report** | [`report/final_report.md`](report/final_report.md) | 6-section solution paper & forensic leak audit |
+| **Internal Review Committee Audit** | [`report/internal_technical_review_audit.md`](report/internal_technical_review_audit.md) | 17-stage MLOps, MLDD & banking audit matrix |
+| **Architectural Deep-Dive** | [`report/production_readiness_architectural_audit.md`](report/production_readiness_architectural_audit.md) | System data-flow & API component mapping |
+| **Pre-Submission Integrity Audit** | [`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md) | 14-point pre-submission pass/fail verification |
 
 ---
 
-## 🎯 Key Capabilities & Banking Innovations
+## Key Capabilities & Banking Innovations
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────────────────┐
 │                              MULESHIELD PRO PLATFORM FEATURES                           │
-├───────────────────────────────┬─────────────────────────────────────────────────────────┤
+├───────────────────────────────┼─────────────────────────────────────────────────────────┤
 │ Core Engine Feature           │ Technical Implementation & Impact                       │
 ├───────────────────────────────┼─────────────────────────────────────────────────────────┤
 │ Zero-Leakage ML Pipeline      │ Purged all 12 post-investigation resolution flags &     │
@@ -53,7 +54,7 @@
 
 ---
 
-## 🏛️ System Architecture & Data-Flow Pipeline
+## System Architecture & Data-Flow Pipeline
 
 ```
                                 MULESHIELD PRO SYSTEM ARCHITECTURE
@@ -76,7 +77,7 @@
 
 ---
 
-## 📈 ML Benchmark & Model Selection Matrix
+## ML Benchmark & Model Selection Matrix
 
 To select the champion model, three architectures were evaluated across identical **5-Fold Stratified Group K-Fold Cross-Validation** splits ($9,082$ accounts, $6,118$ distinct clusters):
 
@@ -93,7 +94,7 @@ To select the champion model, three architectures were evaluated across identica
 
 ---
 
-## 🔍 Domain-Mapped TreeSHAP Anomaly Drivers
+## Domain-Mapped TreeSHAP Anomaly Drivers
 
 MuleShield PRO translates abstract anonymized dataset features into clear, human-understandable banking anomaly signals for compliance officers:
 
@@ -118,7 +119,7 @@ MuleShield PRO translates abstract anonymized dataset features into clear, human
 
 ---
 
-## ⚡ Quick Start & Execution Guide
+## Quick Start & Execution Guide
 
 ### 1. Launch the Live REST API & Analyst Dashboard
 ```bash
@@ -140,58 +141,59 @@ Executes zero-dependency offline inference using the synchronized deployment pac
 
 ---
 
-## 📁 Repository Structure Overview
+## Repository Structure Overview
 
 ```text
 MuleShield-Fraud-Detection/
 │
-├── 🌐 frontend/                   <-- Presentation Layer (Analyst UI)
+├── frontend/                      <-- Presentation Layer (Analyst UI)
 │   └── index.html                 <-- Single-page 5-tab dashboard UI
 │
-├── ⚙️ backend/                    <-- Application Server Layer
+├── backend/                       <-- Application Server Layer
 │   ├── main.py                    <-- Flask REST API host (port 8000)
 │   ├── risk_engine.py             <-- Real-time prediction engine
 │   ├── db.py                      <-- In-memory case index
 │   └── storage/                   <-- Persisted FIU-IND STR drafts
 │
-├── 🤖 modeling/                   <-- Machine Learning Core
+├── modeling/                      <-- Machine Learning Core
 │   ├── preprocessor.py            <-- Preprocessor class implementation
 │   ├── preprocessor.pkl           <-- Fitted transformer binary
 │   ├── mule_shield_model.json     <-- Production XGBoost model
 │   ├── feature_schema.json        <-- 6,820 aligned feature schema
 │   └── model_config.json          <-- Calibrated threshold (0.9899)
 │
-├── 🛠️ scripts/                    <-- Optimization & Artifact Generators
+├── scripts/                       <-- Optimization & Artifact Generators
 │   ├── optimize_pipeline_final.py <-- 5-Fold Group CV tuner
 │   └── build_modeling_artifacts.py<-- Artifact generator
 │
-├── 📊 data/                       <-- Production Input Data
+├── data/                          <-- Production Input Data
 │   ├── data_copy.csv              <-- Primary dataset file (9,082 rows)
 │   └── Description.xlsx           <-- Business column dictionary
 │
-├── 📦 deployment/                 <-- Standalone Deployment Package
+├── deployment/                    <-- Standalone Deployment Package
 │   ├── run_model.py               <-- Portable CLI runner
 │   ├── README.txt                 <-- Execution guide
 │   └── modeling/                  <-- Synchronized model artifacts
 │
-├── 📑 report/                     <-- Technical Audit Reports
+├── report/                        <-- Technical Audit Reports
 │   ├── final_report.md            <-- Comprehensive solution report
 │   ├── ml_audit_and_optimization_report.md  <-- ML tuning report
 │   ├── internal_technical_review_audit.md    <-- 17-Stage Technical Review
 │   └── production_readiness_architectural_audit.md <-- System audit
 │
-├── 📚 docs/                       <-- Full Documentation Package (32 files)
+├── docs/                          <-- Full Documentation Package (32 files)
 │   ├── README.md                  <-- Master documentation hub
 │   └── PRE_SUBMISSION_INTEGRITY_AUDIT.md
 │
-├── 📄 run_our_model.py            <-- Root CLI inference script
-├── 📄 README.md                   <-- Master repository README
-└── 📄 .gitignore                  <-- Git version control rules
+├── LICENSE                        <-- Project License (MIT)
+├── run_our_model.py               <-- Root CLI inference script
+├── README.md                      <-- Master repository README
+└── .gitignore                     <-- Git version control rules
 ```
 
 ---
 
-## 🛡️ Hackathon Submission Integrity & Verification
+## Hackathon Submission Integrity & Verification
 
 A 14-point pre-submission audit ([`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md)) confirms:
 * **Zero Model Retraining:** Model weights (`mule_shield_model.json`) and preprocessor binaries (`preprocessor.pkl`) were strictly preserved.
@@ -201,7 +203,6 @@ A 14-point pre-submission audit ([`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs
 
 ---
 
-## 👥 Team & License
-* **Competition:** PSB CyberShield Grand Finale 2026
-* **Team:** MuleShield Architecture Group
-* **License:** Production-Oriented Prototype for PSB CyberShield Evaluation.
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

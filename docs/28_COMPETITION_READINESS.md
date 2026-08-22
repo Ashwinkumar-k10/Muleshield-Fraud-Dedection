@@ -28,7 +28,7 @@ A pre-submission verification audit confirms that **MuleShield PRO** meets key t
 
 > [!NOTE]
 > **Verified Model Performance Metric:**  
-> - **Final Serialized / Verified Model:** **`0.8807 ± 0.0403` PR-AUC** (out-of-fold 5-fold group CV benchmark, $100\%$ Precision, calibrated threshold `0.9899`).  
+> - **Final Serialized / Verified Model:** **`0.8807 ± 0.0403` PR-AUC** (out-of-fold 5-fold group CV benchmark, $100\%$ Precision, $61.64\%$ Recall, $0.7586$ F1-Score, calibrated threshold `0.9899`).  
 > - **Hyperparameter Search Champion:** **`0.8833 ± 0.0365` PR-AUC** (grid search optimization experiment result stored in `model_config.json`).
 
 ---

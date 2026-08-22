@@ -1,11 +1,11 @@
 # 🛡️ 01 — PROJECT OVERVIEW
-**MuleShield PRO — Enterprise AI-Powered Mule Account & Cyber-Fraud Detection Platform**
+**MuleShield PRO — Explainable and Leakage-Controlled AI Prototype for Suspicious Mule Account Detection**
 
 ---
 
 ## 1. What is MuleShield PRO?
 
-**MuleShield PRO** is an enterprise AI/ML financial fraud detection platform built for Public Sector Banks (PSBs). It analyzes bank account transaction behavior, cross-channel payment flows, and regulatory alerts to detect **money mule accounts** and suspicious fund-layering syndicates before fraudulent proceeds can be withdrawn or laundered.
+**MuleShield PRO** is an explainable, leakage-controlled AI/ML prototype built for Public Sector Banks (PSBs). It analyzes bank account transaction metrics, cross-channel payment flows, and regulatory alerts to detect **money mule accounts** and suspicious fund-layering syndicates before fraudulent proceeds can be withdrawn or laundered.
 
 ---
 
@@ -22,7 +22,7 @@ A **money mule account** is a bank account used by cyber-criminals to receive an
 
 ## 3. What Does MuleShield PRO Do?
 
-MuleShield PRO replaces rigid static rules with a zero-leakage, highly calibrated **XGBoost Machine Learning Classifier** combined with **SHAP Explainable AI**, real-time **Flask REST APIs**, and an enterprise **Tailwind CSS Analyst Dashboard**.
+MuleShield PRO replaces rigid static rules with a zero-leakage, highly calibrated **XGBoost Machine Learning Classifier** combined with **TreeSHAP Explainable AI**, real-time **Flask REST APIs**, and an analyst-facing **Tailwind CSS Dashboard**.
 
 ```
 ┌─────────────────┐      ┌─────────────────────────┐      ┌─────────────────────────┐      ┌────────────────────────┐
@@ -34,13 +34,21 @@ MuleShield PRO replaces rigid static rules with a zero-leakage, highly calibrate
 
 ---
 
-## 4. Key Capabilities & System Components
+## 4. System Capabilities & Implementation Status
 
-* **Zero-Leakage ML Model:** XGBoost classifier trained on 6,820 sanitized features, achieving **`0.8807 ± 0.0403` PR-AUC** under strict 5-fold Group-Aware Cross-Validation.
-* **Explainable AI (SHAP):** Translates anonymized feature attributions into clear banking domain concepts (e.g., *Cash-to-UPI Velocity Ratio*, *Outflow-Inflow Balance Anomaly*).
-* **Mule Network Ring Topology (Demo UI):** Interactive visual graph demonstrating multi-hop fund-layering networks from victim origin to ATM cash-out nodes.
-* **Suspicious Transaction Report (STR) Generator:** Creates FIU-IND compliant report drafts for flagged accounts.
-* **Simulated CBS Debit Freeze:** Provides instant operational confirmation for emergency account freezing (`CBS-FRZ-2026-9003-8492`).
+### **IMPLEMENTED (100% Fully Functional):**
+* **Zero-Leakage ML Model:** XGBoost classifier trained on 6,820 sanitized features, achieving **`0.8807 ± 0.0403` PR-AUC** under strict 5-fold Group-Aware Cross-Validation (`0.8833 ± 0.0365` Hyperparameter Search Champion, $100\%$ Precision @ threshold `0.9899`).
+* **Explainable AI (TreeSHAP):** Translates raw feature attributions into clear banking domain concepts (*Cash-to-UPI Velocity Ratio*, *Outflow-Inflow Balance Anomaly*).
+* **Flask REST API Engine:** Real-time endpoint inference listening on `http://localhost:8000`.
+* **Suspicious Transaction Report (STR) Generator:** Compiles FIU-IND compliant report drafts for flagged accounts.
+
+### **SIMULATED (UI Prototype Demonstrations):**
+* **Mule Network Ring Topology:** Interactive 2D Vis.js graph demonstrating multi-hop fund-layering networks using sample UI data.
+* **CBS Debit Freeze Trigger:** Provides operational receipt confirmation (`CBS-FRZ-2026-9003-8492`) for human-in-the-loop account freezing.
+* **Regulatory Watchlists:** In-memory lookups against I4C, CERT-In, and RBI caution feeds.
+
+### **NOT IMPLEMENTED (Future Cloud Scope):**
+* Live Core Banking System (Finacle/BaNCS) integration, direct FIU portal transmission, or live production cloud infrastructure.
 
 ---
 

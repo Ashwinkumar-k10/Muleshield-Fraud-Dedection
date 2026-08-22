@@ -52,7 +52,7 @@ a:\Projects\PSB\
 
 ## 2. Key Serialized Artifact Details
 
-1. **`modeling/mule_shield_model.json`:** Native XGBoost JSON format model file ($0.8807$ PR-AUC).
+1. **`modeling/mule_shield_model.json`:** Native XGBoost JSON format model file (`0.8807 ± 0.0403` verified 5-fold Group CV PR-AUC, `0.8833 ± 0.0365` hyperparameter search champion).
 2. **`modeling/preprocessor.pkl`:** Fitted `MuleShieldPreprocessor` object handling missing values, winsorization quantiles, and feature engineering.
 3. **`modeling/feature_schema.json`:** JSON array listing exact 6,820 feature names in order.
 4. **`modeling/model_config.json`:** Metadata file defining `decision_threshold: 0.9899` and `pos_weight: 111.12`.
