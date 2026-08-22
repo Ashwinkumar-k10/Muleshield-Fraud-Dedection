@@ -133,12 +133,6 @@ python run_our_model.py
 ```
 Evaluates all 9,082 accounts and generates a risk summary table in terminal and saved CSV output.
 
-### 3. Run Portable Standalone Deployment Package
-```bash
-python deployment/run_model.py
-```
-Executes zero-dependency offline inference using the synchronized deployment package (`deployment/`).
-
 ---
 
 ## Repository Structure Overview
@@ -169,11 +163,6 @@ MuleShield-Fraud-Detection/
 ├── data/                          <-- Production Input Data
 │   ├── data_copy.csv              <-- Primary dataset file (9,082 rows)
 │   └── Description.xlsx           <-- Business column dictionary
-│
-├── deployment/                    <-- Standalone Deployment Package
-│   ├── run_model.py               <-- Portable CLI runner
-│   ├── README.txt                 <-- Execution guide
-│   └── modeling/                  <-- Synchronized model artifacts
 │
 ├── report/                        <-- Technical Audit Reports
 │   ├── final_report.md            <-- Comprehensive solution report
