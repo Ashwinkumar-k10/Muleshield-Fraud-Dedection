@@ -162,7 +162,8 @@ MuleShield-Fraud-Detection/
 │
 ├── data/                          <-- Production Input Data
 │   ├── data_copy.csv              <-- Primary dataset file (9,082 rows)
-│   └── Description.xlsx           <-- Business column dictionary
+│   ├── Description.xlsx           <-- Business column dictionary
+│   └── shap_values_clean.npy      <-- Pre-computed TreeSHAP matrix cache
 │
 ├── report/                        <-- Technical Audit Reports
 │   ├── final_report.md            <-- Comprehensive solution report
