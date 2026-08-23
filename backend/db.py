@@ -3,6 +3,7 @@ import numpy as np
 import json
 import os
 import sys
+from datetime import datetime
 
 sys.path.append('.')
 from backend.risk_engine import risk_engine
@@ -27,14 +28,16 @@ class MuleDatabase:
             self.has_test_cache = False
 
         self.cases_db = {}
+        self.audit_logs = []
         self.dataset_summary = {
             "total_evaluated": len(self.raw_df),
-            "critical_alerts": 87,
-            "high_risk": 19,
-            "medium_risk": 42,
-            "cleared_accounts": 8934
+            "critical_alerts": 0,
+            "high_risk": 0,
+            "medium_risk": 0,
+            "cleared_accounts": 0
         }
         self._init_cases()
+        self._init_audit_logs()
 
     def _init_cases(self):
         print("Initializing MuleDatabase cases using saved preprocessor & model...")
@@ -76,15 +79,62 @@ class MuleDatabase:
             }
             
             raw_row = self.raw_df.loc[idx].to_dict()
+            status = "NEW" if tier in ["Critical", "High", "Medium"] else "CLEARED"
+            analyst = "Unassigned" if status == "NEW" else "System"
+            
             self.cases_db[int(idx)] = {
                 "account_id": int(idx),
                 "risk_score": round(prob, 4),
                 "tier": tier,
+                "status": status,
+                "assigned_analyst": analyst,
+                "created_at": "2026-08-23 12:00:00 UTC",
                 "action": action,
                 "top_shap_drivers": top3_feats,
                 "regulatory_flags": mock_regulatory,
-                "raw_attributes": {k: (str(v) if pd.notnull(v) else "N/A") for k, v in list(raw_row.items())[:10]}
+                "raw_attributes": {k: (str(v) if pd.notnull(v) else "N/A") for k, v in list(raw_row.items())[:15]},
+                "notes": [
+                    {
+                        "timestamp": "2026-08-23 12:00:00 UTC",
+                        "analyst": "System",
+                        "text": f"MuleShield PRO prediction model evaluated case. Score: {prob:.4f}. Classification: {tier} risk."
+                    }
+                ],
+                "timeline": [
+                    {
+                        "timestamp": "2026-08-23 12:00:00 UTC",
+                        "event": "Case Ingestion",
+                        "detail": f"System identified {tier} risk level based on batch behavior."
+                    }
+                ]
             }
+
+    def _init_audit_logs(self):
+        self.audit_logs = [
+            {
+                "timestamp": "2026-08-23 12:00:00 UTC",
+                "actor": "System",
+                "action": "Database Ingestion",
+                "case_id": "All",
+                "status": "SUCCESS"
+            },
+            {
+                "timestamp": "2026-08-23 12:00:10 UTC",
+                "actor": "System",
+                "action": "Model Loading",
+                "case_id": "XGBoost v1.0.0-PRO",
+                "status": "SUCCESS"
+            }
+        ]
+
+    def log_audit_event(self, action, case_id, status, actor="Analyst-10"):
+        self.audit_logs.append({
+            "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+            "actor": actor,
+            "action": action,
+            "case_id": str(case_id),
+            "status": status
+        })
 
     def get_all_cases(self):
         tier_rank = {"Critical": 1, "High": 2, "Medium": 3, "Low": 4}
@@ -102,20 +152,82 @@ class MuleDatabase:
         if account_id in self.raw_df.index:
             raw_row_df = self.raw_df.loc[[account_id]]
             res = risk_engine.predict_raw_row(raw_row_df)
-            return {
+            prob = res["risk_score"]
+            tier = res["tier"]
+            action = res["action"]
+            
+            self.cases_db[account_id] = {
                 "account_id": account_id,
-                "risk_score": res["risk_score"],
-                "tier": res["tier"],
-                "action": res["action"],
+                "risk_score": prob,
+                "tier": tier,
+                "status": "NEW" if tier in ["Critical", "High", "Medium"] else "CLEARED",
+                "assigned_analyst": "Unassigned" if tier in ["Critical", "High", "Medium"] else "System",
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+                "action": action,
                 "top_shap_drivers": ["F994", "F3598", "F1319"],
                 "regulatory_flags": {
-                    "i4c_db": "FLAGGED" if res["tier"] == "Critical" else "CLEAR",
+                    "i4c_db": "FLAGGED" if tier == "Critical" else "CLEAR",
                     "cert_in_botnet": "CLEAR",
-                    "rbi_caution_list": "FLAGGED" if res["tier"] == "Critical" else "CLEAR"
+                    "rbi_caution_list": "FLAGGED" if tier == "Critical" else "CLEAR"
                 },
-                "raw_attributes": {k: (str(v) if pd.notnull(v) else "N/A") for k, v in list(self.raw_df.loc[account_id].to_dict().items())[:10]}
+                "raw_attributes": {k: (str(v) if pd.notnull(v) else "N/A") for k, v in list(self.raw_df.loc[account_id].to_dict().items())[:15]},
+                "notes": [
+                    {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+                        "analyst": "System",
+                        "text": f"Real-time inference executed on ad-hoc sandbox evaluation request. Score: {prob:.4f}."
+                    }
+                ],
+                "timeline": [
+                    {
+                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC"),
+                        "event": "Case Ingestion",
+                        "detail": f"Ad-hoc prediction created this case with {tier} risk level."
+                    }
+                ]
             }
+            return self.cases_db[account_id]
         return None
+
+    def update_case_status(self, account_id: int, new_status: str, analyst: str):
+        case = self.get_case(account_id)
+        if not case:
+            return None
+        old_status = case["status"]
+        case["status"] = new_status.upper()
+        case["assigned_analyst"] = analyst
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+        
+        case["timeline"].append({
+            "timestamp": timestamp,
+            "event": "Status Updated",
+            "detail": f"Status changed from {old_status} to {new_status.upper()} by {analyst}."
+        })
+        case["notes"].append({
+            "timestamp": timestamp,
+            "analyst": analyst,
+            "text": f"System Status Update: Set lifecycle to {new_status.upper()}."
+        })
+        self.log_audit_event("Case Status Update", account_id, f"CHANGED TO {new_status.upper()}", analyst)
+        return case
+
+    def add_case_note(self, account_id: int, note_text: str, analyst: str):
+        case = self.get_case(account_id)
+        if not case:
+            return None
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+        case["notes"].append({
+            "timestamp": timestamp,
+            "analyst": analyst,
+            "text": note_text
+        })
+        case["timeline"].append({
+            "timestamp": timestamp,
+            "event": "Note Added",
+            "detail": f"New note appended by analyst {analyst}."
+        })
+        self.log_audit_event("Add Case Note", account_id, "SUCCESS", analyst)
+        return case
 
     def generate_str_report(self, account_id: int):
         case = self.get_case(account_id)
@@ -123,6 +235,7 @@ class MuleDatabase:
             return None
 
         drivers_formatted = "\n".join([f"  - {feat}: High behavioral anomaly score" for feat in case["top_shap_drivers"]])
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
         str_text = f"""SUSPICIOUS TRANSACTION REPORT (STR) DRAFT
 ==================================================
@@ -149,12 +262,19 @@ Generated by MuleShield AI/ML Risk Engine
    Execute immediate freeze on debit transactions and transmit this STR to FIU-IND per PMLA guidelines.
 
 ==================================================
-Report Generated: 2026-07-29 09:40 IST
+Report Generated: {timestamp}
 Status: DRAFT READY FOR ANALYST SIGN-OFF
 """
         filepath = os.path.join(STORAGE_DIR, f"str_report_{account_id}.txt")
         with open(filepath, 'w') as f:
             f.write(str_text)
+        
+        case["timeline"].append({
+            "timestamp": timestamp,
+            "event": "STR Report Generated",
+            "detail": f"FIU-IND draft STR document generated and stored in storage."
+        })
+        self.log_audit_event("Generate STR Draft", account_id, "SUCCESS")
         return {"str_draft": str_text, "filepath": filepath}
 
     def get_sample_mule_payload(self):
