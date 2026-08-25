@@ -1,0 +1,36 @@
+{
+    "train_size": 4472,
+    "val_size": 2487,
+    "test_size": 2123,
+    "gnn_epochs": 100,
+    "metrics_comparison": [
+        {
+            "Model": "XGBoost Baseline",
+            "Precision": 1.0,
+            "Recall": 0.45714285714285713,
+            "F1": 0.6274509803921569,
+            "PR-AUC": 0.8596904270423289
+        },
+        {
+            "Model": "Pure GraphSAGE GNN",
+            "Precision": 1.0,
+            "Recall": 0.08571428571428572,
+            "F1": 0.15789473684210525,
+            "PR-AUC": 0.48364178398795193
+        },
+        {
+            "Model": "XGBoost + Graph Features",
+            "Precision": 1.0,
+            "Recall": 0.45714285714285713,
+            "F1": 0.6274509803921569,
+            "PR-AUC": 0.8596904270423289
+        },
+        {
+            "Model": "XGBoost + GNN Embeddings",
+            "Precision": 0.6666666666666666,
+            "Recall": 0.11428571428571428,
+            "F1": 0.1951219512195122,
+            "PR-AUC": 0.35206076101940065
+        }
+    ]
+}
