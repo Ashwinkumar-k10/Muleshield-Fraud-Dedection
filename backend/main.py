@@ -11,8 +11,10 @@ import hmac
 import hashlib
 from datetime import datetime
 import numpy as np
+import requests
 
 sys.path.append('.')
+from backend.config import Config
 from backend.db import db
 from backend.report_generator import generate_pdf_report
 
@@ -21,8 +23,12 @@ CORS(app)
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 
-# Environment-backed secret key
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "muleshield-secure-secret-2026-xyz").encode()
+# Configuration
+JWT_SECRET_KEY = Config.JWT_SECRET_KEY
+ML_SERVICE_URL = Config.ML_SERVICE_URL
+GRAPH_SERVICE_URL = Config.GRAPH_SERVICE_URL
+REPORTING_SERVICE_URL = Config.REPORTING_SERVICE_URL
+SERVICE_TIMEOUT = Config.SERVICE_TIMEOUT
 
 # JWT Token Helpers
 def create_token(email, role):
@@ -106,6 +112,16 @@ def require_roles(*allowed_roles):
 @app.route("/", methods=["GET"])
 def read_root():
     return send_from_directory(FRONTEND_DIR, "index.html")
+
+@app.route("/health", methods=["GET"])
+def gateway_health():
+    return jsonify({
+        "service": "api-gateway",
+        "status": "UP",
+        "ml_service": ML_SERVICE_URL,
+        "graph_service": GRAPH_SERVICE_URL or "in-process",
+        "reporting_service": REPORTING_SERVICE_URL or "in-process"
+    }), 200
 
 @app.route("/api/auth/signup", methods=["POST", "OPTIONS"])
 def auth_signup():
@@ -220,6 +236,7 @@ def get_case_graph(account_id: int):
         
     from backend.database.connection import SessionLocal
     from backend.database.repositories import TransactionRepository
+    from backend.database.models import Account
     from backend.graph_engine import MuleGraph
     
     db_session = SessionLocal()
@@ -236,34 +253,58 @@ def get_case_graph(account_id: int):
                 "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
                 "edges": []
             })
-            
-        graph = MuleGraph(txs)
         
-        if account_id not in graph.nodes:
-            from backend.database.models import Account
-            acc_exists = db_session.query(Account).filter(Account.account_id == account_id).first()
-            if not acc_exists:
-                return jsonify({"error": "Account not found"}), 404
-            return jsonify({
-                "metrics": {
-                    "account_id": account_id,
-                    "degree": 0, "fan_in": 0, "fan_out": 0,
-                    "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
-                    "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
-                },
-                "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
-                "edges": []
-            })
+        if GRAPH_SERVICE_URL:
+            tx_payload = []
+            for tx in txs:
+                tx_payload.append({
+                    "id": tx.id,
+                    "source_account_id": tx.source_account_id,
+                    "destination_account_id": tx.destination_account_id,
+                    "amount": tx.amount,
+                    "transaction_type": tx.transaction_type,
+                    "timestamp": tx.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+                })
+            try:
+                response = requests.post(
+                    f"{GRAPH_SERVICE_URL}/metrics",
+                    json={"account_id": account_id, "transactions": tx_payload},
+                    timeout=SERVICE_TIMEOUT
+                )
+                if response.status_code != 200:
+                    return jsonify({"error": "Graph service error", "detail": response.text}), response.status_code
+                data = response.json()
+                metrics = data["center_metrics"]
+                node_metrics = data.get("node_metrics", {})
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": "Graph Service Temporarily Unavailable", "detail": str(e)}), 503
+        else:
+            graph = MuleGraph(txs)
+            if account_id not in graph.nodes:
+                acc_exists = db_session.query(Account).filter(Account.account_id == account_id).first()
+                if not acc_exists:
+                    return jsonify({"error": "Account not found"}), 404
+                return jsonify({
+                    "metrics": {
+                        "account_id": account_id,
+                        "degree": 0, "fan_in": 0, "fan_out": 0,
+                        "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
+                        "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
+                    },
+                    "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
+                    "edges": []
+                })
+            metrics = graph.compute_metrics(account_id)
+            node_metrics = {nid: graph.compute_metrics(nid) for nid in metrics["cluster_nodes"]}
             
-        metrics = graph.compute_metrics(account_id)
         cluster_nodes = metrics["cluster_nodes"]
         nodes_to_render = set(cluster_nodes)
         
         nodes_list = []
         for nid in nodes_to_render:
-            node_metrics = graph.compute_metrics(nid)
+            nm = node_metrics.get(nid, metrics)
             is_active = (nid == account_id)
-            has_risk = len(node_metrics["signals"]) > 0
+            has_risk = len(nm["signals"]) > 0
             
             bg_color = "#3b82f6" if is_active else ("#f59e0b" if has_risk else "#94a3b8")
             border_color = "#1d4ed8" if is_active else ("#d97706" if has_risk else "#475569")
@@ -271,7 +312,7 @@ def get_case_graph(account_id: int):
             
             nodes_list.append({
                 "id": nid,
-                "label": f"Account #{nid}\n(Vol: \u20b9{node_metrics['total_volume']/1000:.1f}k)",
+                "label": f"Account #{nid}\n(Vol: \u20b9{nm['total_volume']/1000:.1f}k)",
                 "color": {"background": bg_color, "border": border_color, "highlight": {"background": "#60a5fa", "border": "#1d4ed8"}},
                 "shape": "box",
                 "font": {"color": text_color, "face": "JetBrains Mono", "size": 11, "bold": is_active},
@@ -280,26 +321,43 @@ def get_case_graph(account_id: int):
             })
             
         edges_list = []
-        for e in graph.edges:
-            src = e["source"]
-            dst = e["destination"]
-            if src in nodes_to_render and dst in nodes_to_render:
-                in_cycle = any(src in cyc and dst in cyc for cyc in metrics["cycles"])
-                edge_color = "#ef4444" if in_cycle else "#64748b"
-                width = 2 if in_cycle else 1
-                
-                edges_list.append({
-                    "id": e["id"],
-                    "from": src,
-                    "to": dst,
-                    "label": f"\u20b9{e['amount']/1000:.1f}k",
-                    "arrows": "to",
-                    "color": {"color": edge_color, "highlight": "#ef4444"},
-                    "width": width,
-                    "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
-                    "title": f"Amount: \u20b9{e['amount']:,.2f}\nType: {e['type']}\nTime: {e['timestamp']}"
-                })
-                
+        if GRAPH_SERVICE_URL:
+            for tx in txs:
+                src = tx.source_account_id
+                dst = tx.destination_account_id
+                if src in nodes_to_render and dst in nodes_to_render:
+                    edges_list.append({
+                        "id": tx.id,
+                        "from": src,
+                        "to": dst,
+                        "label": f"\u20b9{tx.amount/1000:.1f}k",
+                        "arrows": "to",
+                        "color": {"color": "#64748b", "highlight": "#ef4444"},
+                        "width": 1,
+                        "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
+                        "title": f"Amount: \u20b9{tx.amount:,.2f}\nType: {tx.transaction_type}\nTime: {tx.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}"
+                    })
+        else:
+            for e in graph.edges:
+                src = e["source"]
+                dst = e["destination"]
+                if src in nodes_to_render and dst in nodes_to_render:
+                    in_cycle = any(src in cyc and dst in cyc for cyc in metrics["cycles"])
+                    edge_color = "#ef4444" if in_cycle else "#64748b"
+                    width = 2 if in_cycle else 1
+                    
+                    edges_list.append({
+                        "id": e["id"],
+                        "from": src,
+                        "to": dst,
+                        "label": f"\u20b9{e['amount']/1000:.1f}k",
+                        "arrows": "to",
+                        "color": {"color": edge_color, "highlight": "#ef4444"},
+                        "width": width,
+                        "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
+                        "title": f"Amount: \u20b9{e['amount']:,.2f}\nType: {e['type']}\nTime: {e['timestamp']}"
+                    })
+        
         return jsonify({
             "metrics": metrics,
             "nodes": nodes_list,
@@ -407,14 +465,33 @@ def download_pdf(account_id: int):
     if not case:
         return jsonify({"error": "Case not found"}), 404
     
-    pdf_bytes = generate_pdf_report(case)
     db.log_audit_event("Download PDF Report", account_id, "SUCCESS", request.user.get("email"))
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"MuleShield_Report_{account_id}.pdf"
-    )
+    
+    if REPORTING_SERVICE_URL:
+        try:
+            response = requests.post(
+                f"{REPORTING_SERVICE_URL}/reports/pdf",
+                json={"case_data": case},
+                timeout=SERVICE_TIMEOUT
+            )
+            if response.status_code == 200:
+                return send_file(
+                    io.BytesIO(response.content),
+                    mimetype="application/pdf",
+                    as_attachment=True,
+                    download_name=f"MuleShield_Report_{account_id}.pdf"
+                )
+            return jsonify({"error": "Reporting service error", "detail": response.text}), response.status_code
+        except requests.exceptions.RequestException as e:
+            return jsonify({"error": "Reporting Service Temporarily Unavailable", "detail": str(e)}), 503
+    else:
+        pdf_bytes = generate_pdf_report(case)
+        return send_file(
+            io.BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"MuleShield_Report_{account_id}.pdf"
+        )
 
 @app.route("/api/sample-mule-payload", methods=["GET", "OPTIONS"])
 @require_auth
@@ -442,12 +519,12 @@ def predict_raw_account():
     import requests
     data = request.json or {}
     
-    ml_service_url = "http://localhost:8080/predict"
+    ml_service_url = f"{ML_SERVICE_URL}/predict"
     try:
         response = requests.post(ml_service_url, json={
             "account_features": data.get("account_features", {}),
             "explain": True
-        }, timeout=5.0)
+        }, timeout=SERVICE_TIMEOUT)
         
         if response.status_code == 200:
             result = response.json()

@@ -2,6 +2,19 @@ import collections
 import time
 from datetime import datetime
 
+
+def _parse_timestamp(ts):
+    if hasattr(ts, "total_seconds"):
+        return ts
+    if isinstance(ts, str):
+        ts = ts.replace(" UTC", "")
+        try:
+            return datetime.fromisoformat(ts)
+        except ValueError:
+            return datetime.utcnow()
+    return datetime.utcnow()
+
+
 class MuleGraph:
     def __init__(self, transactions):
         self.adj = collections.defaultdict(list)
@@ -10,20 +23,32 @@ class MuleGraph:
         self.edges = []
         
         for tx in transactions:
-            src = tx.source_account_id
-            dst = tx.destination_account_id
+            if isinstance(tx, dict):
+                src = tx["source_account_id"]
+                dst = tx["destination_account_id"]
+                tx_id = tx["id"]
+                amount = tx["amount"]
+                tx_type = tx["transaction_type"]
+                timestamp = _parse_timestamp(tx["timestamp"])
+            else:
+                src = tx.source_account_id
+                dst = tx.destination_account_id
+                tx_id = tx.id
+                amount = tx.amount
+                tx_type = tx.transaction_type
+                timestamp = tx.timestamp
             self.nodes.add(src)
             self.nodes.add(dst)
             self.edges.append({
-                "id": tx.id,
+                "id": tx_id,
                 "source": src,
                 "destination": dst,
-                "amount": tx.amount,
-                "type": tx.transaction_type,
-                "timestamp": tx.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+                "amount": amount,
+                "type": tx_type,
+                "timestamp": timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
             })
-            self.adj[src].append((dst, tx.amount, tx.timestamp))
-            self.rev_adj[dst].append((src, tx.amount, tx.timestamp))
+            self.adj[src].append((dst, amount, timestamp))
+            self.rev_adj[dst].append((src, amount, timestamp))
 
     def compute_metrics(self, account_id):
         # 1. Degree, Fan-in, Fan-out
