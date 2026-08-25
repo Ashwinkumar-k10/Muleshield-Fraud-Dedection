@@ -14,7 +14,6 @@ import numpy as np
 
 sys.path.append('.')
 from backend.db import db
-from backend.risk_engine import risk_engine
 from backend.report_generator import generate_pdf_report
 
 app = Flask(__name__)
@@ -440,12 +439,33 @@ def predict_raw_account():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight successful"}), 200
         
-    import pandas as pd
+    import requests
     data = request.json or {}
-    raw_df = pd.DataFrame([data.get("account_features", {})])
-    result = risk_engine.predict_raw_row(raw_df)
-    db.log_audit_event("Account Evaluation Ingestion", "N/A", f"RISK: {result['risk_score']:.4f} ({result['tier']})", request.user.get("email"))
-    return jsonify(result)
+    
+    ml_service_url = "http://localhost:8080/predict"
+    try:
+        response = requests.post(ml_service_url, json={
+            "account_features": data.get("account_features", {}),
+            "explain": True
+        }, timeout=5.0)
+        
+        if response.status_code == 200:
+            result = response.json()
+            db.log_audit_event("Account Evaluation Ingestion", "N/A", f"RISK: {result['risk_score']:.4f} ({result['tier']})", request.user.get("email"))
+            return jsonify(result)
+        else:
+            return jsonify({
+                "error": "ML Inference Service returned an error",
+                "detail": response.json().get("error", "Unknown service error"),
+                "status_code": response.status_code
+            }), response.status_code
+            
+    except requests.exceptions.RequestException as e:
+        print(f"ML Inference Service Connection Error: {e}")
+        return jsonify({
+            "error": "ML Inference Service Temporarily Unavailable",
+            "detail": "The dedicated machine learning inference server could not be reached. Please check service status."
+        }), 503
 
 @app.route("/api/model/metadata", methods=["GET", "OPTIONS"])
 @require_auth
