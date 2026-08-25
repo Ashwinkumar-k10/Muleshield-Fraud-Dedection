@@ -44,6 +44,7 @@ export default function LoginPage() {
       sessionStorage.setItem("muleshield_authenticated", "true");
       sessionStorage.setItem("muleshield_user_email", data.email);
       sessionStorage.setItem("muleshield_user_role", data.role);
+      sessionStorage.setItem("muleshield_token", data.token);
       
       setSuccess('Access granted. Initializing operations console...');
       setTimeout(() => {

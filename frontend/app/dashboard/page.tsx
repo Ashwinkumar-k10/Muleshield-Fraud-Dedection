@@ -102,7 +102,10 @@ export default function DashboardPage() {
 
   const fetchModelMetadata = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/model/metadata');
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch('http://localhost:8000/api/model/metadata', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setModelMetadata(data);
@@ -114,7 +117,10 @@ export default function DashboardPage() {
 
   const fetchCasesData = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/cases');
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch('http://localhost:8000/api/cases', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setAllCases(data.cases || []);
@@ -134,7 +140,10 @@ export default function DashboardPage() {
     setSelectedCaseId(accountId);
     setLoadingCase(true);
     try {
-      const res = await fetch(`http://localhost:8000/api/cases/${accountId}`);
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch(`http://localhost:8000/api/cases/${accountId}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setSelectedCase(data);
@@ -150,9 +159,13 @@ export default function DashboardPage() {
   const submitStatusUpdate = async () => {
     if (!selectedCaseId) return;
     try {
+      const token = sessionStorage.getItem("muleshield_token");
       const res = await fetch(`http://localhost:8000/api/cases/${selectedCaseId}/status`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ status: statusSelect, analyst: activeAnalyst })
       });
       if (res.ok) {
@@ -167,9 +180,13 @@ export default function DashboardPage() {
   const submitNote = async () => {
     if (!selectedCaseId || !newNote.trim()) return;
     try {
+      const token = sessionStorage.getItem("muleshield_token");
       const res = await fetch(`http://localhost:8000/api/cases/${selectedCaseId}/notes`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ note: newNote, analyst: activeAnalyst })
       });
       if (res.ok) {
@@ -187,9 +204,13 @@ export default function DashboardPage() {
       return;
     }
     try {
+      const token = sessionStorage.getItem("muleshield_token");
       const res = await fetch(`http://localhost:8000/api/cases/${selectedCaseId}/cbs-freeze`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({ analyst: activeAnalyst })
       });
       if (res.ok) {
@@ -203,10 +224,60 @@ export default function DashboardPage() {
     }
   };
 
+  const handleDownloadPDF = async (accountId: number) => {
+    try {
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch(`http://localhost:8000/api/cases/${accountId}/download-pdf`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MuleShield_Report_${accountId}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        alert("Failed downloading PDF report. Unauthorized.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDownloadJSON = async (accountId: number) => {
+    try {
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch(`http://localhost:8000/api/cases/${accountId}/download-json`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `MuleShield_Case_${accountId}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+      } else {
+        alert("Failed downloading JSON case details. Unauthorized.");
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const triggerGenerateSTRDraft = async () => {
     if (!selectedCaseId) return;
     try {
-      const res = await fetch(`http://localhost:8000/api/cases/${selectedCaseId}/str-draft`, { method: 'POST' });
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch(`http://localhost:8000/api/cases/${selectedCaseId}/str-draft`, { 
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         // Custom popup dialog modal
@@ -237,7 +308,10 @@ export default function DashboardPage() {
   const fetchAuditLogs = async () => {
     setLoadingLogs(true);
     try {
-      const res = await fetch('http://localhost:8000/api/audit-logs');
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch('http://localhost:8000/api/audit-logs', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setAuditLogs(data.audit_logs || []);
@@ -251,7 +325,10 @@ export default function DashboardPage() {
 
   const handleLoadSamplePayload = async () => {
     try {
-      const res = await fetch('http://localhost:8000/api/sample-mule-payload');
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch('http://localhost:8000/api/sample-mule-payload', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
       if (res.ok) {
         const data = await res.json();
         setStandardInputs({
@@ -290,9 +367,13 @@ export default function DashboardPage() {
 
     setTimeout(async () => {
       try {
+        const token = sessionStorage.getItem("muleshield_token");
         const res = await fetch('http://localhost:8000/api/predict', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
           body: JSON.stringify({ account_features: payload })
         });
         if (res.ok) {
@@ -352,10 +433,25 @@ export default function DashboardPage() {
     networkInstanceRef.current = new vis.Network(networkContainerRef.current, data, options);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    const token = sessionStorage.getItem("muleshield_token");
+    if (token) {
+      try {
+        await fetch('http://localhost:8000/api/auth/logout', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` 
+          }
+        });
+      } catch (err) {
+        console.error("Logout API request failed:", err);
+      }
+    }
     sessionStorage.removeItem("muleshield_authenticated");
     sessionStorage.removeItem("muleshield_user_email");
     sessionStorage.removeItem("muleshield_user_role");
+    sessionStorage.removeItem("muleshield_token");
     router.push('/login');
   };
 
@@ -434,7 +530,13 @@ export default function DashboardPage() {
   });
 
   const getRoleLabel = (role: string) => {
-    return role === 'ANALYST' ? 'Fraud Analyst' : (role === 'MANAGER' ? 'Operations Manager' : 'Compliance Auditor');
+    switch (role) {
+      case 'ADMIN': return 'System Administrator';
+      case 'ANALYST': return 'Fraud Analyst';
+      case 'INVESTIGATOR': return 'Lead Investigator';
+      case 'VIEWER': return 'Compliance Viewer';
+      default: return role;
+    }
   };
 
   if (!authenticated) {
@@ -504,10 +606,12 @@ export default function DashboardPage() {
             <i className="fa-solid fa-table-list text-sm"></i>
             <span>Risk Case Queue</span>
           </button>
-          <button onClick={() => setActiveTab('evaluate')} className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${activeTab === 'evaluate' ? 'active-sidebar-item' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <i className="fa-solid fa-microscope text-sm"></i>
-            <span>Evaluate Account</span>
-          </button>
+          {['ADMIN', 'ANALYST'].includes(activeRole) && (
+            <button onClick={() => setActiveTab('evaluate')} className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${activeTab === 'evaluate' ? 'active-sidebar-item' : 'text-slate-600 hover:bg-slate-50'}`}>
+              <i className="fa-solid fa-microscope text-sm"></i>
+              <span>Evaluate Account</span>
+            </button>
+          )}
           <button onClick={() => setActiveTab('network')} className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${activeTab === 'network' ? 'active-sidebar-item' : 'text-slate-600 hover:bg-slate-50'}`}>
             <i className="fa-solid fa-diagram-project text-sm"></i>
             <span>Mule Network Ring</span>
@@ -530,10 +634,12 @@ export default function DashboardPage() {
           </button>
 
           <div className="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider mt-2">SYSTEM CONFIG</div>
-          <button onClick={() => { setActiveTab('logs'); fetchAuditLogs(); }} className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${activeTab === 'logs' ? 'active-sidebar-item' : 'text-slate-600 hover:bg-slate-50'}`}>
-            <i className="fa-solid fa-receipt text-sm"></i>
-            <span>System Audit Logs</span>
-          </button>
+          {activeRole === 'ADMIN' && (
+            <button onClick={() => { setActiveTab('logs'); fetchAuditLogs(); }} className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${activeTab === 'logs' ? 'active-sidebar-item' : 'text-slate-600 hover:bg-slate-50'}`}>
+              <i className="fa-solid fa-receipt text-sm"></i>
+              <span>System Audit Logs</span>
+            </button>
+          )}
 
           <div className="mt-auto pt-4 border-t border-slate-200 space-y-3">
             <div className="metric-card p-3 text-xs space-y-2">
@@ -882,13 +988,15 @@ export default function DashboardPage() {
                       <div className="metric-card space-y-4">
                         <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wide">Triage Controls</h4>
                         <div className="grid grid-cols-2 gap-2 text-xs">
+                          {/* Status update restricted to ADMIN and INVESTIGATOR */}
                           <div className="col-span-2 space-y-1.5 border-b border-slate-100 pb-3">
                             <label className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Update Case Status</label>
                             <div className="flex gap-2">
                               <select
                                 value={statusSelect}
                                 onChange={(e) => setStatusSelect(e.target.value)}
-                                className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-600 font-sans font-semibold text-slate-800 shadow-sm"
+                                disabled={!['ADMIN', 'INVESTIGATOR'].includes(activeRole)}
+                                className="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-600 font-sans font-semibold text-slate-800 shadow-sm disabled:bg-slate-55 disabled:cursor-not-allowed"
                               >
                                 <option value="NEW">NEW</option>
                                 <option value="TRIAGED">TRIAGED</option>
@@ -896,23 +1004,46 @@ export default function DashboardPage() {
                                 <option value="ESCALATED">ESCALATED</option>
                                 <option value="CLOSED">CLOSED</option>
                               </select>
-                              <button onClick={submitStatusUpdate} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition">Update</button>
+                              <button 
+                                onClick={submitStatusUpdate} 
+                                disabled={!['ADMIN', 'INVESTIGATOR'].includes(activeRole)}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition disabled:bg-blue-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                              >
+                                Update
+                              </button>
                             </div>
                           </div>
 
-                          <a href={`http://localhost:8000/api/cases/${selectedCase.account_id}/download-pdf`} className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center">
+                          {/* Token-secured PDF & JSON download links */}
+                          <button 
+                            onClick={() => handleDownloadPDF(selectedCase.account_id)} 
+                            className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center"
+                          >
                             <i className="fa-solid fa-file-pdf text-red-600"></i> Download PDF
-                          </a>
-                          <a href={`http://localhost:8000/api/cases/${selectedCase.account_id}/download-json`} className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center font-mono text-[11px]">
+                          </button>
+                          <button 
+                            onClick={() => handleDownloadJSON(selectedCase.account_id)} 
+                            className="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center font-mono text-[11px]"
+                          >
                             <i className="fa-solid fa-file-code text-blue-600"></i> Download JSON
-                          </a>
+                          </button>
                           
-                          <button onClick={submitCBSFreeze} className="col-span-2 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center justify-center gap-2 shadow shadow-red-600/10">
+                          {/* CBS Freeze restricted to ADMIN and INVESTIGATOR */}
+                          <button 
+                            onClick={submitCBSFreeze} 
+                            disabled={!['ADMIN', 'INVESTIGATOR'].includes(activeRole)}
+                            className="col-span-2 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center justify-center gap-2 shadow shadow-red-600/10 disabled:bg-red-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
                             <i className="fa-solid fa-lock"></i>
                             <span>Confirm Emergency CBS Debit Freeze</span>
                           </button>
                           
-                          <button onClick={triggerGenerateSTRDraft} className="col-span-2 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                          {/* STR generation restricted to ADMIN, ANALYST, INVESTIGATOR */}
+                          <button 
+                            onClick={triggerGenerateSTRDraft} 
+                            disabled={activeRole === 'VIEWER'}
+                            className="col-span-2 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition flex items-center justify-center gap-2 shadow-sm disabled:bg-slate-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
                             <i className="fa-solid fa-file-invoice"></i>
                             <span>Generate Compliance STR Draft</span>
                           </button>
@@ -937,10 +1068,17 @@ export default function DashboardPage() {
                           <textarea
                             value={newNote}
                             onChange={(e) => setNewNote(e.target.value)}
-                            placeholder="Type new case note details here..."
-                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white h-20"
+                            disabled={activeRole === 'VIEWER'}
+                            placeholder={activeRole === 'VIEWER' ? "Access Denied: Viewers have read-only access." : "Type new case note details here..."}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white h-20 disabled:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
                           />
-                          <button onClick={submitNote} className="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition">Add Note Entry</button>
+                          <button 
+                            onClick={submitNote} 
+                            disabled={activeRole === 'VIEWER'}
+                            className="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition disabled:bg-blue-400 disabled:opacity-60 disabled:cursor-not-allowed"
+                          >
+                            Add Note Entry
+                          </button>
                         </div>
                       </div>
 
