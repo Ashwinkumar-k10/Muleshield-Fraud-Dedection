@@ -17,3 +17,16 @@ env/
 Thumbs.db
 .vscode/
 .idea/
+~$*
+
+# Databases
+*.db
+*.sqlite
+
+# Runtime generated STR reports
+backend/storage/*.txt
+backend/storage/*.pdf
+backend/storage/*.json
+
+# Scratch outputs
+scratch/oof_predictions.csv
