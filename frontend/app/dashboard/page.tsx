@@ -70,6 +70,36 @@ export default function DashboardPage() {
   const networkContainerRef = useRef<HTMLDivElement>(null);
   const networkInstanceRef = useRef<any>(null);
 
+  // Dynamic Transaction Graph States
+  const [graphNodes, setGraphNodes] = useState<any[]>([]);
+  const [graphEdges, setGraphEdges] = useState<any[]>([]);
+  const [graphMetrics, setGraphMetrics] = useState<any>(null);
+  const [selectedGraphNodeId, setSelectedGraphNodeId] = useState<number | null>(null);
+  const [selectedGraphEdgeData, setSelectedGraphEdgeData] = useState<any>(null);
+  const [loadingGraph, setLoadingGraph] = useState(false);
+
+  const fetchGraphData = async (accountId: number) => {
+    setLoadingGraph(true);
+    try {
+      const token = sessionStorage.getItem("muleshield_token");
+      const res = await fetch(`http://localhost:8000/api/cases/${accountId}/graph`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setGraphNodes(data.nodes || []);
+        setGraphEdges(data.edges || []);
+        setGraphMetrics(data.metrics || null);
+        setSelectedGraphNodeId(accountId);
+        setSelectedGraphEdgeData(null);
+      }
+    } catch (err) {
+      console.error("Failed fetching transaction graph:", err);
+    } finally {
+      setLoadingGraph(false);
+    }
+  };
+
   // Authenticate Session
   useEffect(() => {
     const auth = sessionStorage.getItem("muleshield_authenticated");
@@ -93,12 +123,19 @@ export default function DashboardPage() {
     }
   }, [authenticated]);
 
-  // Trigger Network graph load when tab changes
+  // Trigger Network graph fetch when selectedCaseId changes and network tab is active
   useEffect(() => {
-    if (activeTab === 'network') {
+    if (authenticated && activeTab === 'network' && selectedCaseId !== null) {
+      fetchGraphData(selectedCaseId);
+    }
+  }, [activeTab, selectedCaseId, authenticated]);
+
+  // Re-initialize vis network whenever graph data updates
+  useEffect(() => {
+    if (activeTab === 'network' && graphNodes.length > 0) {
       setTimeout(initNetworkGraph, 100);
     }
-  }, [activeTab]);
+  }, [graphNodes, graphEdges, activeTab]);
 
   const fetchModelMetadata = async () => {
     try {
@@ -401,36 +438,51 @@ export default function DashboardPage() {
       return;
     }
 
-    const nodes = new vis.DataSet([
-      { id: 1, label: 'Victim Account\n#1001\n(Origin)', color: { background: '#dbeafe', border: '#2563eb' }, shape: 'box', font: { color: '#1e3a8a', face: 'JetBrains Mono', size: 10 } },
-      { id: 2, label: 'Feeder Mule\n#9001\n(Pass-Through)', color: { background: '#fef3c7', border: '#d97706' }, shape: 'box', font: { color: '#78350f', face: 'JetBrains Mono', size: 10 } },
-      { id: 3, label: 'Mule Account\n#9003\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
-      { id: 4, label: 'Mule Account\n#9004\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
-      { id: 5, label: 'Mule Account\n#9006\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
-      { id: 6, label: 'Hub Aggregator\n#9099\n(Cash-Out Hub)', color: { background: '#fcf0f2', border: '#991b1b' }, shape: 'box', font: { color: '#7f1d1d', face: 'JetBrains Mono', size: 11, bold: true } },
-      { id: 7, label: 'ATM Cash-Out\n#ATM-402', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 9 } },
-      { id: 8, label: 'Crypto Off-Ramp\n#P2P-EXCHANGE', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 9 } }
-    ]);
-
-    const edges = new vis.DataSet([
-      { from: 1, to: 2, label: '₹600k UPI (1 min)', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#2563eb' } },
-      { from: 2, to: 3, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
-      { from: 2, to: 4, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
-      { from: 2, to: 5, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
-      { from: 3, to: 6, label: '₹195k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
-      { from: 4, to: 6, label: '₹198k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
-      { from: 5, to: 6, label: '₹196k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
-      { from: 6, to: 7, label: '₹350k Cash', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#991b1b' } },
-      { from: 6, to: 8, label: '₹239k USDT', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#991b1b' } }
-    ]);
+    const nodes = new vis.DataSet(graphNodes);
+    const edges = new vis.DataSet(graphEdges);
 
     const data = { nodes, edges };
     const options = {
-      physics: { enabled: true, solver: 'forceAtlas2Based' },
+      physics: { 
+        enabled: true, 
+        solver: 'forceAtlas2Based',
+        forceAtlas2Based: {
+          gravitationalConstant: -50,
+          centralGravity: 0.01,
+          springLength: 100,
+          springConstant: 0.08
+        }
+      },
       interaction: { hover: true, dragNodes: true }
     };
     
-    networkInstanceRef.current = new vis.Network(networkContainerRef.current, data, options);
+    const network = new vis.Network(networkContainerRef.current, data, options);
+    networkInstanceRef.current = network;
+
+    // Node selection event listener
+    network.on("selectNode", (params: any) => {
+      const nodeId = params.nodes[0];
+      setSelectedGraphNodeId(nodeId);
+      setSelectedGraphEdgeData(null);
+    });
+
+    // Edge selection event listener
+    network.on("selectEdge", (params: any) => {
+      const edgeId = params.edges[0];
+      const edge = graphEdges.find((e: any) => e.id === edgeId);
+      if (edge) {
+        setSelectedGraphEdgeData(edge);
+        setSelectedGraphNodeId(null);
+      }
+    });
+
+    // Deselect listeners
+    network.on("deselectNode", () => {
+      setSelectedGraphNodeId(null);
+    });
+    network.on("deselectEdge", () => {
+      setSelectedGraphEdgeData(null);
+    });
   };
 
   const handleLogout = async () => {
@@ -1241,31 +1293,174 @@ export default function DashboardPage() {
 
           {/* TAB: Mule Network Graph */}
           {activeTab === 'network' && (
-            <main className="flex-1 overflow-y-auto p-6 space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <main className="flex-1 overflow-hidden flex flex-col p-6 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3 flex-shrink-0">
                 <div>
-                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Mule Network Ring Graph</h2>
-                  <p className="text-xs text-slate-500 mt-1">Trace multi-hop fund routing paths from victim origins to aggregator cash-out nodes.</p>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Transaction Graph Intelligence</h2>
+                  <p className="text-xs text-slate-500 mt-1">Trace real-time transaction relationships, cycles, and multi-hop paths.</p>
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">1-Hop</button>
-                  <button className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">2-Hop</button>
-                  <button onClick={initNetworkGraph} className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
+                  <button onClick={() => selectedCaseId && fetchGraphData(selectedCaseId)} className="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-1.5 shadow-sm">
                     <i className="fa-solid fa-arrows-rotate"></i>
-                    <span>Reset Layout</span>
+                    <span>Refresh Graph</span>
                   </button>
                 </div>
               </div>
 
-              <div className="metric-card space-y-4">
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-xs text-blue-900">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <i class="fa-solid fa-circle-info"></i> DEMONSTRATION NETWORK TOPOLOGY
+              <div className="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Left Side: Graph Visualization */}
+                <div className="lg:col-span-2 metric-card flex flex-col p-4 space-y-3 h-full min-h-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                      <i className="fa-solid fa-diagram-project text-blue-600"></i> Active Transaction Component Graph
+                    </h3>
+                    {selectedCaseId && (
+                      <span className="font-mono text-[10px] text-slate-500 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">Centering: #{selectedCaseId}</span>
+                    )}
                   </div>
-                  <p className="text-[11px] leading-relaxed">This visualization presents simulated multi-hop transaction topologies to demonstrate network ring identification workflows.</p>
+                  
+                  <div ref={networkContainerRef} id="vis-network-container" className="flex-1 border border-slate-200 rounded-2xl bg-slate-900/5 overflow-hidden shadow-inner relative">
+                    {loadingGraph && (
+                      <div className="absolute inset-0 bg-white/60 backdrop-blur-xs flex items-center justify-center text-xs font-mono text-slate-500 z-10">
+                        <span>Computing Graph Topology Metrics...</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div ref={networkContainerRef} id="vis-network-container" className="border border-slate-200 rounded-2xl overflow-hidden shadow-inner">
-                  {/* Vis Network injects canvas here */}
+
+                {/* Right Side: Graph Analytics Panel */}
+                <div className="metric-card flex flex-col p-4 space-y-4 overflow-y-auto h-full min-h-0">
+                  <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Graph Analytics Panel</h3>
+                  
+                  {graphMetrics ? (
+                    <div className="space-y-4 text-xs">
+                      {/* Metric Cards Grid */}
+                      <div className="grid grid-cols-2 gap-2 text-center font-mono">
+                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                          <div className="text-[9px] text-slate-400 font-bold">DEGREE (K)</div>
+                          <div className="text-lg font-black text-slate-900 mt-0.5">{graphMetrics.degree}</div>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                          <div className="text-[9px] text-slate-400 font-bold">CENTRALITY</div>
+                          <div className="text-lg font-black text-slate-950 mt-0.5">{graphMetrics.centrality.toFixed(3)}</div>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                          <div className="text-[9px] text-slate-400 font-bold">FAN-IN (IN)</div>
+                          <div className="text-lg font-black text-blue-600 mt-0.5">{graphMetrics.fan_in}</div>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                          <div className="text-[9px] text-slate-400 font-bold">FAN-OUT (OUT)</div>
+                          <div className="text-lg font-black text-orange-600 mt-0.5">{graphMetrics.fan_out}</div>
+                        </div>
+                      </div>
+
+                      {/* General Graph Info */}
+                      <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl font-mono text-[10px] space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Transaction Velocity:</span>
+                          <strong className="text-slate-900">{graphMetrics.velocity} transfers</strong>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Total Volume:</span>
+                          <strong className="text-slate-950">\u20b9{graphMetrics.total_volume.toLocaleString()}</strong>
+                        </div>
+                      </div>
+
+                      {/* Investigation Signals */}
+                      <div className="space-y-1.5">
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Graph Signals</h4>
+                        {graphMetrics.signals && graphMetrics.signals.length > 0 ? (
+                          <div className="space-y-1">
+                            {graphMetrics.signals.map((sig: string, idx: number) => (
+                              <div key={idx} className="p-2 rounded-lg text-[10px] font-bold border border-red-200 bg-red-50 text-red-700 flex items-center gap-1.5">
+                                <i className="fa-solid fa-triangle-exclamation"></i>
+                                <span>{sig}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="p-2 rounded-lg text-[10px] font-bold border border-emerald-200 bg-emerald-50 text-emerald-700 flex items-center gap-1.5">
+                            <i className="fa-solid fa-circle-check"></i>
+                            <span>No Suspicious Graph Topology Flagged</span>
+                          </div>
+                        )}
+                        <p className="text-[9px] text-slate-400 mt-1 font-medium italic">Signals suggest investigation paths but do not constitute mathematical proof of fraud.</p>
+                      </div>
+
+                      {/* Path Traversal & Cycles */}
+                      {graphMetrics.cycles && graphMetrics.cycles.length > 0 && (
+                        <div className="space-y-1.5">
+                          <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Circular Flows (Cycles)</h4>
+                          <div className="space-y-1">
+                            {graphMetrics.cycles.map((cyc: number[], idx: number) => (
+                              <div key={idx} className="p-2 bg-red-950/5 border border-red-200/50 rounded-lg text-[10px] font-mono leading-relaxed">
+                                <span className="font-bold text-red-600 mr-1">Cycle #{idx+1}:</span>
+                                {cyc.join(" \u2794 ")}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Interactive Selection Focus Inspector */}
+                      <div className="border-t border-slate-100 pt-3 space-y-3">
+                        <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Active Inspection</h4>
+                        
+                        {selectedGraphNodeId !== null ? (
+                          <div className="p-3 bg-blue-50/50 border border-blue-200 rounded-xl space-y-3">
+                            <div>
+                              <div className="font-bold text-slate-900">Account #{selectedGraphNodeId}</div>
+                              <p className="text-[10px] text-slate-400">Selected Node Details</p>
+                            </div>
+                            
+                            <button 
+                              onClick={() => {
+                                handleSelectCase(selectedGraphNodeId);
+                                fetchGraphData(selectedGraphNodeId);
+                              }}
+                              className="w-full py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition flex items-center justify-center gap-1 shadow-sm"
+                            >
+                              <i className="fa-solid fa-magnifying-glass"></i>
+                              <span>Center & Traversal Network</span>
+                            </button>
+                          </div>
+                        ) : selectedGraphEdgeData !== null ? (
+                          <div className="p-3 bg-emerald-50/50 border border-emerald-200 rounded-xl space-y-2 font-mono text-[10px]">
+                            <div>
+                              <div className="font-bold text-slate-900 text-xs">Transaction Data</div>
+                              <p className="text-[9px] text-slate-400 font-sans">Selected Directed Edge</p>
+                            </div>
+                            <div className="space-y-1">
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Route:</span>
+                                <strong>#{selectedGraphEdgeData.from} \u2794 #{selectedGraphEdgeData.to}</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Amount:</span>
+                                <strong className="text-emerald-700 text-[11px]">\u20b9{selectedGraphEdgeData.title.split('\n')[0].split('\u20b9')[1] || selectedGraphEdgeData.title.split('Amount: ')[1].split('\n')[0]}</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Method:</span>
+                                <strong>{selectedGraphEdgeData.label.split('k ')[1] || selectedGraphEdgeData.title.split('\n')[1].split(': ')[1]}</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-500">Timestamp:</span>
+                                <strong>{selectedGraphEdgeData.title.split('Time: ')[1]}</strong>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-slate-400 text-center italic text-[10px]">
+                            Click any account node or transaction edge to inspect details.
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center items-center h-full text-slate-400 italic">
+                      Select an account from the case list to run transaction graph analytics.
+                    </div>
+                  )}
                 </div>
               </div>
             </main>

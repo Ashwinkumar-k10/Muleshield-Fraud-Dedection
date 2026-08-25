@@ -9,7 +9,7 @@ from sqlalchemy.orm import Session
 sys.path.append('.')
 from backend.risk_engine import risk_engine
 from backend.database.connection import SessionLocal, init_db
-from backend.database.models import Account, Case, RiskPrediction, ShapExplanation, InvestigationEvent, AuditLog, Report
+from backend.database.models import Account, Case, RiskPrediction, ShapExplanation, InvestigationEvent, AuditLog, Report, Transaction
 from backend.database.repositories import (
     AccountRepository,
     CaseRepository,
@@ -17,7 +17,8 @@ from backend.database.repositories import (
     ShapExplanationRepository,
     InvestigationEventRepository,
     AuditLogRepository,
-    ReportRepository
+    ReportRepository,
+    TransactionRepository
 )
 
 STORAGE_DIR = os.path.join(os.path.dirname(__file__), 'storage')
@@ -130,6 +131,48 @@ class MuleDatabase:
                     detail=f"System identified {tier} risk level based on batch behavior.",
                     timestamp_str="2026-08-23 12:00:00 UTC"
                 )
+            
+            # 4. Seed transaction relationships if table is empty
+            tx_count = db.query(Transaction).count()
+            if tx_count == 0:
+                print("Seeding transaction relationships...")
+                # Explicit suspicious structures
+                # Cycle (9001 -> 9002 -> 9003 -> 9001)
+                TransactionRepository.create(db, 9001, 9002, 150000.0, "UPI")
+                TransactionRepository.create(db, 9002, 9003, 150000.0, "IMPS")
+                TransactionRepository.create(db, 9003, 9001, 149500.0, "RTGS")
+                
+                # Fan-In (Hub 9010)
+                TransactionRepository.create(db, 9004, 9010, 80000.0, "UPI")
+                TransactionRepository.create(db, 9005, 9010, 95000.0, "UPI")
+                TransactionRepository.create(db, 9006, 9010, 110000.0, "IMPS")
+                TransactionRepository.create(db, 9007, 9010, 125000.0, "UPI")
+                TransactionRepository.create(db, 9008, 9010, 70000.0, "RTGS")
+                
+                # Fan-Out (Hub 9010 distribution)
+                TransactionRepository.create(db, 9010, 9011, 90000.0, "IMPS")
+                TransactionRepository.create(db, 9010, 9012, 85000.0, "IMPS")
+                TransactionRepository.create(db, 9010, 9013, 95000.0, "IMPS")
+                TransactionRepository.create(db, 9010, 9014, 100000.0, "IMPS")
+                TransactionRepository.create(db, 9010, 9015, 70000.0, "IMPS")
+                
+                # Multi-hop Path (9020 -> 9021 -> 9022 -> 9023 -> 9024)
+                TransactionRepository.create(db, 9020, 9021, 200000.0, "RTGS")
+                TransactionRepository.create(db, 9021, 9022, 198000.0, "RTGS")
+                TransactionRepository.create(db, 9022, 9023, 196000.0, "RTGS")
+                TransactionRepository.create(db, 9023, 9024, 190000.0, "RTGS")
+                
+                # Seed random transaction noise
+                import random
+                random.seed(42)
+                for _ in range(150):
+                    src = random.choice(sample_indices)
+                    dst = random.choice(sample_indices)
+                    if src != dst and not (src in [9001, 9002, 9003, 9004, 9005, 9006, 9007, 9008, 9010, 9020, 9021, 9022, 9023] and dst in [9001, 9002, 9003, 9010, 9011, 9012, 9013, 9014, 9015, 9021, 9022, 9023, 9024]):
+                        amt = round(random.uniform(5000, 75000), 2)
+                        tx_type = random.choice(["UPI", "IMPS", "RTGS"])
+                        TransactionRepository.create(db, src, dst, amt, tx_type)
+                print("Seeding transaction relationships completed.")
             
             print("Database seeding completed successfully.")
         except Exception as e:

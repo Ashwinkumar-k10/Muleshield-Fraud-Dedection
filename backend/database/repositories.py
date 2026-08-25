@@ -152,3 +152,27 @@ class ReportRepository:
         db.commit()
         db.refresh(report)
         return report
+
+class TransactionRepository:
+    @staticmethod
+    def get_all(db: Session):
+        return db.query(Transaction).all()
+
+    @staticmethod
+    def get_by_account_id(db: Session, account_id: int):
+        from sqlalchemy import or_
+        return db.query(Transaction).filter(or_(Transaction.source_account_id == account_id, Transaction.destination_account_id == account_id)).all()
+
+    @staticmethod
+    def create(db: Session, source_id: int, dest_id: int, amount: float, tx_type: str, timestamp=None):
+        tx = Transaction(
+            source_account_id=source_id,
+            destination_account_id=dest_id,
+            amount=amount,
+            transaction_type=tx_type,
+            timestamp=timestamp or datetime.utcnow()
+        )
+        db.add(tx)
+        db.commit()
+        db.refresh(tx)
+        return tx

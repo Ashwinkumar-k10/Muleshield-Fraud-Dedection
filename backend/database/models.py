@@ -35,9 +35,10 @@ class Transaction(Base):
     __tablename__ = "transactions"
     
     id = Column(Integer, primary_key=True, index=True)
-    account_id = Column(Integer, ForeignKey("accounts.account_id"), nullable=False)
+    source_account_id = Column(Integer, ForeignKey("accounts.account_id"), nullable=False)
+    destination_account_id = Column(Integer, ForeignKey("accounts.account_id"), nullable=False)
     amount = Column(Float, nullable=False)
-    transaction_type = Column(String, nullable=False) # e.g. UPI_INFLOW, CASH_OUTFLOW
+    transaction_type = Column(String, nullable=False) # e.g. UPI, IMPS, RTGS, CASH
     timestamp = Column(DateTime, default=datetime.utcnow)
 
 class Case(Base):

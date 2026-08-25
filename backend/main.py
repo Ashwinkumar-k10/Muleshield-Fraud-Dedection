@@ -212,6 +212,103 @@ def get_case_by_id(account_id: int):
         return jsonify({"error": "Account case not found"}), 404
     return jsonify(case)
 
+@app.route("/api/cases/<int:account_id>/graph", methods=["GET", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
+def get_case_graph(account_id: int):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    from backend.database.connection import SessionLocal
+    from backend.database.repositories import TransactionRepository
+    from backend.graph_engine import MuleGraph
+    
+    db_session = SessionLocal()
+    try:
+        txs = TransactionRepository.get_all(db_session)
+        if not txs:
+            return jsonify({
+                "metrics": {
+                    "account_id": account_id,
+                    "degree": 0, "fan_in": 0, "fan_out": 0,
+                    "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
+                    "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
+                },
+                "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
+                "edges": []
+            })
+            
+        graph = MuleGraph(txs)
+        
+        if account_id not in graph.nodes:
+            from backend.database.models import Account
+            acc_exists = db_session.query(Account).filter(Account.account_id == account_id).first()
+            if not acc_exists:
+                return jsonify({"error": "Account not found"}), 404
+            return jsonify({
+                "metrics": {
+                    "account_id": account_id,
+                    "degree": 0, "fan_in": 0, "fan_out": 0,
+                    "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
+                    "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
+                },
+                "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
+                "edges": []
+            })
+            
+        metrics = graph.compute_metrics(account_id)
+        cluster_nodes = metrics["cluster_nodes"]
+        nodes_to_render = set(cluster_nodes)
+        
+        nodes_list = []
+        for nid in nodes_to_render:
+            node_metrics = graph.compute_metrics(nid)
+            is_active = (nid == account_id)
+            has_risk = len(node_metrics["signals"]) > 0
+            
+            bg_color = "#3b82f6" if is_active else ("#f59e0b" if has_risk else "#94a3b8")
+            border_color = "#1d4ed8" if is_active else ("#d97706" if has_risk else "#475569")
+            text_color = "#ffffff"
+            
+            nodes_list.append({
+                "id": nid,
+                "label": f"Account #{nid}\n(Vol: \u20b9{node_metrics['total_volume']/1000:.1f}k)",
+                "color": {"background": bg_color, "border": border_color, "highlight": {"background": "#60a5fa", "border": "#1d4ed8"}},
+                "shape": "box",
+                "font": {"color": text_color, "face": "JetBrains Mono", "size": 11, "bold": is_active},
+                "borderWidth": 2 if is_active else 1,
+                "shadow": is_active
+            })
+            
+        edges_list = []
+        for e in graph.edges:
+            src = e["source"]
+            dst = e["destination"]
+            if src in nodes_to_render and dst in nodes_to_render:
+                in_cycle = any(src in cyc and dst in cyc for cyc in metrics["cycles"])
+                edge_color = "#ef4444" if in_cycle else "#64748b"
+                width = 2 if in_cycle else 1
+                
+                edges_list.append({
+                    "id": e["id"],
+                    "from": src,
+                    "to": dst,
+                    "label": f"\u20b9{e['amount']/1000:.1f}k",
+                    "arrows": "to",
+                    "color": {"color": edge_color, "highlight": "#ef4444"},
+                    "width": width,
+                    "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
+                    "title": f"Amount: \u20b9{e['amount']:,.2f}\nType: {e['type']}\nTime: {e['timestamp']}"
+                })
+                
+        return jsonify({
+            "metrics": metrics,
+            "nodes": nodes_list,
+            "edges": edges_list
+        })
+    finally:
+        db_session.close()
+
 @app.route("/api/cases/<int:account_id>/status", methods=["POST", "OPTIONS"])
 @require_auth
 @require_roles("ADMIN", "INVESTIGATOR")
