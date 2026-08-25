@@ -467,6 +467,30 @@ def predict_raw_account():
             "detail": "The dedicated machine learning inference server could not be reached. Please check service status."
         }), 503
 
+@app.route("/api/model/drift", methods=["GET", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
+def get_model_drift():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    from backend.drift_engine import MuleShieldDriftMonitor
+    monitor = MuleShieldDriftMonitor()
+    drift_data = monitor.fetch_database_and_evaluate()
+    
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry
+    
+    db_session = SessionLocal()
+    try:
+        active_model = db_session.query(ModelRegistry).filter(ModelRegistry.approval_status == "PRODUCTION").first()
+        model_version = active_model.version if active_model else "V1 BASELINE"
+        drift_data["model_version"] = model_version
+    finally:
+        db_session.close()
+        
+    return jsonify(drift_data)
+
 @app.route("/api/model-registry", methods=["GET", "POST", "OPTIONS"])
 @require_auth
 @require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
