@@ -3,6 +3,7 @@ import numpy as np
 import json
 import os
 import sys
+import time
 from datetime import datetime
 from sqlalchemy.orm import Session
 
@@ -25,18 +26,28 @@ STORAGE_DIR = os.path.join(os.path.dirname(__file__), 'storage')
 os.makedirs(STORAGE_DIR, exist_ok=True)
 
 class MuleDatabase:
-    def __init__(self, data_path=None):
+    def __init__(self, data_path=None, max_retries=10, retry_delay=3):
         if data_path is None:
             data_path = os.path.join('data', 'data_copy.csv') if os.path.exists(os.path.join('data', 'data_copy.csv')) else 'data_copy.csv'
         self.data_path = data_path
-        
-        # Initialize SQL schema
-        init_db()
-        
+
+        last_error = None
+        for attempt in range(1, max_retries + 1):
+            try:
+                init_db()
+                break
+            except Exception as e:
+                last_error = e
+                if attempt < max_retries:
+                    print(f"Database connection attempt {attempt}/{max_retries} failed, retrying in {retry_delay}s: {e}")
+                    time.sleep(retry_delay)
+                else:
+                    raise RuntimeError(f"Database initialization failed after {max_retries} attempts: {last_error}")
+
         self.raw_df = pd.read_csv(data_path, engine='pyarrow')
         if 'Unnamed: 0' in self.raw_df.columns:
             self.raw_df = self.raw_df.drop(columns=['Unnamed: 0'])
-            
+
         try:
             shap_path = os.path.join('data', 'shap_values_clean.npy') if os.path.exists(os.path.join('data', 'shap_values_clean.npy')) else 'shap_values_clean.npy'
             self.shap_values = np.load(shap_path)
@@ -44,7 +55,6 @@ class MuleDatabase:
         except Exception:
             self.has_test_cache = False
 
-        # Seed Database if Empty
         self._seed_database_if_empty()
 
     def _seed_database_if_empty(self):
