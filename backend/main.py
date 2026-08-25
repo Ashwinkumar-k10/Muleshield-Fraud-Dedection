@@ -20,6 +20,77 @@ FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "fr
 def read_root():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
+@app.route("/api/auth/signup", methods=["POST", "OPTIONS"])
+def auth_signup():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role", "ANALYST")
+    
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+        
+    import hashlib
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    from backend.database.connection import SessionLocal
+    from backend.database.models import User
+    
+    db_session = SessionLocal()
+    try:
+        existing_user = db_session.query(User).filter(User.email == email).first()
+        if existing_user:
+            return jsonify({"error": "User with this Email/Employee ID already registered"}), 400
+            
+        new_user = User(email=email, password_hash=password_hash, role=role)
+        db_session.add(new_user)
+        db_session.commit()
+        return jsonify({"message": "User registered successfully", "email": email, "role": role})
+    except Exception as e:
+        db_session.rollback()
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db_session.close()
+
+@app.route("/api/auth/login", methods=["POST", "OPTIONS"])
+def auth_login():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    email = data.get("email")
+    password = data.get("password")
+    
+    if not email or not password:
+        return jsonify({"error": "Email and password are required"}), 400
+        
+    import hashlib
+    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    
+    from backend.database.connection import SessionLocal
+    from backend.database.models import User
+    from datetime import datetime
+    
+    db_session = SessionLocal()
+    try:
+        user = db_session.query(User).filter(User.email == email, User.password_hash == password_hash).first()
+        if not user:
+            return jsonify({"error": "Invalid Email/Employee ID or password"}), 401
+            
+        return jsonify({
+            "message": "Authentication successful",
+            "email": user.email,
+            "role": user.role,
+            "token": f"MS-SESSION-{user.id}-{int(datetime.utcnow().timestamp())}"
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db_session.close()
+
 @app.route("/api/cases", methods=["GET"])
 def get_all_cases():
     res = db.get_all_cases()
@@ -32,8 +103,11 @@ def get_case_by_id(account_id: int):
         return jsonify({"error": "Account case not found"}), 404
     return jsonify(case)
 
-@app.route("/api/cases/<int:account_id>/status", methods=["POST"])
+@app.route("/api/cases/<int:account_id>/status", methods=["POST", "OPTIONS"])
 def update_case_status(account_id: int):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
     data = request.json or {}
     new_status = data.get("status")
     analyst = data.get("analyst", "Analyst-10")
@@ -45,8 +119,11 @@ def update_case_status(account_id: int):
         return jsonify({"error": "Case not found"}), 404
     return jsonify(updated_case)
 
-@app.route("/api/cases/<int:account_id>/notes", methods=["POST"])
+@app.route("/api/cases/<int:account_id>/notes", methods=["POST", "OPTIONS"])
 def add_case_note(account_id: int):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
     data = request.json or {}
     note_text = data.get("note")
     analyst = data.get("analyst", "Analyst-10")
@@ -58,15 +135,21 @@ def add_case_note(account_id: int):
         return jsonify({"error": "Case not found"}), 404
     return jsonify(updated_case)
 
-@app.route("/api/cases/<int:account_id>/str-draft", methods=["POST"])
+@app.route("/api/cases/<int:account_id>/str-draft", methods=["POST", "OPTIONS"])
 def create_str_draft(account_id: int):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
     result = db.generate_str_report(account_id)
     if not result:
         return jsonify({"error": "Account case not found for STR generation"}), 404
     return jsonify(result)
 
-@app.route("/api/cases/<int:account_id>/cbs-freeze", methods=["POST"])
+@app.route("/api/cases/<int:account_id>/cbs-freeze", methods=["POST", "OPTIONS"])
 def cbs_freeze(account_id: int):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
     case = db.get_case(account_id)
     if not case:
         return jsonify({"error": "Case not found"}), 404
@@ -121,8 +204,11 @@ def get_sample_mule_payload():
 def get_audit_logs():
     return jsonify({"audit_logs": db.audit_logs})
 
-@app.route("/api/predict", methods=["POST"])
+@app.route("/api/predict", methods=["POST", "OPTIONS"])
 def predict_raw_account():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
     import pandas as pd
     data = request.json or {}
     raw_df = pd.DataFrame([data.get("account_features", {})])

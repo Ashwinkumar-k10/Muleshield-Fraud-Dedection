@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MuleShield PRO — Enterprise Fraud Risk & Investigation Console</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter & JetBrains Mono -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Vis Network CDN for Graph Topologies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/standalone/umd/vis-network.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    },
+                    colors: {
+                        enterprise: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            200: '#e2e8f0',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            border: '#e2e8f0'
+                        },
+                        brand: {
+                            primary: '#2563eb', // Blue-600
+                            hover: '#1d4ed8',   // Blue-700
+                            accent: '#1e3a8a',  // Blue-900
+                            surface: '#eff6ff'  // Blue-50
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/css">
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; }
+        .active-sidebar-item { 
+            background-color: #f1f5f9 !important; 
+            color: #0f172a !important; 
+            border-left: 4px solid #2563eb; 
+        }
+        .active-tab-nav {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb !important;
+            font-weight: 700;
+        }
+        .metric-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+        }
+        .badge-critical { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .badge-high { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+        .badge-medium { background: #fef9c3; color: #854d0e; border: 1px solid #fef08a; }
+        .badge-low { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        #vis-network-container { width: 100%; height: 480px; background-color: #ffffff; }
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col overflow-hidden bg-slate-50 antialiased font-sans">
+
+    <!-- DEMO GATE / AUTHENTICATION MODAL -->
+    <div id="login-gate" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[999] flex items-center justify-center">
+        <div class="bg-white border border-slate-200 w-full max-w-md p-8 rounded-2xl shadow-2xl space-y-6">
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 bg-blue-600 rounded-2xl text-white flex items-center justify-center text-2xl mx-auto shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h1 class="text-2xl font-black text-slate-950 tracking-tight">MuleShield <span class="text-blue-600">PRO</span></h1>
+                <p class="text-xs text-slate-500 font-medium">Enterprise AI-Powered Mule Account Triage Station</p>
+            </div>
+
+            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl space-y-1 text-xs text-blue-900">
+                <div class="font-bold flex items-center gap-1.5">
+                    <i class="fa-solid fa-circle-info"></i> BANK WORKSTATION ACCESS CONTROL
+                </div>
+                <p class="text-[11px] leading-relaxed">MuleShield PRO verification portal. Authenticate with your secure bank employee credentials or create a new officer registration ID.</p>
+            </div>
+
+            <!-- LOGIN VIEW -->
+            <div id="login-form-view" class="space-y-4">
+                <form onsubmit="handleLogin(event)" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">Corporate Email / ID</label>
+                        <input type="text" id="login-email" value="analyst@muleshield.psb" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white font-mono">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">Password</label>
+                        <input type="password" id="login-password" value="password" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white font-mono">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 transition font-bold py-3.5 rounded-xl text-xs text-white shadow-md shadow-blue-600/20">
+                        Sign In to Workstation
+                    </button>
+                </form>
+                <div class="text-center pt-2">
+                    <button onclick="toggleAuthView('signup')" class="text-xs font-semibold text-blue-600 hover:underline">
+                        New Analyst? Register Workstation ID
+                    </button>
+                </div>
+            </div>
+
+            <!-- SIGNUP VIEW -->
+            <div id="signup-form-view" class="space-y-4 hidden">
+                <form onsubmit="handleSignup(event)" class="space-y-4">
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">Corporate Email / ID</label>
+                        <input type="text" id="signup-email" placeholder="e.g. officer@muleshield.psb" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white font-mono">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">Secure Password</label>
+                        <input type="password" id="signup-password" placeholder="••••••••" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white font-mono">
+                    </div>
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-bold text-slate-700 uppercase tracking-wide">Officer Role</label>
+                        <select id="signup-role" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white font-semibold text-slate-800">
+                            <option value="ANALYST">Fraud Analyst (Default)</option>
+                            <option value="MANAGER">Operations Manager</option>
+                            <option value="AUDITOR">Compliance Auditor</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 transition font-bold py-3.5 rounded-xl text-xs text-white shadow-md shadow-emerald-600/20">
+                        Register Workstation ID
+                    </button>
+                </form>
+                <div class="text-center pt-2">
+                    <button onclick="toggleAuthView('login')" class="text-xs font-semibold text-blue-600 hover:underline">
+                        Already have an ID? Sign In
+                    </button>
+                </div>
+            </div>
+
+            <div class="text-center pt-2">
+                <span class="text-[10px] font-mono text-slate-400">Security Standard: PMLA / FIU-IND Compliant Shell v2.0.0</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP SHELL CONTAINER (Hidden before Auth) -->
+    <div id="app-shell" class="h-full w-full flex flex-col overflow-hidden hidden">
+        
+        <!-- Header -->
+        <header class="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0 z-20 shadow-sm">
+            <div class="flex items-center space-x-3.5">
+                <div class="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg shadow shadow-blue-500/20">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h2 class="text-base font-extrabold text-slate-900 tracking-tight">MuleShield <span class="text-blue-600">PRO</span></h2>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">DEMO MODE</span>
+                        <span class="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">ONLINE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-500 font-medium">Enterprise Fraud Risk & Compliance Console</p>
+                </div>
+            </div>
+
+            <!-- Header Middle Status / Health Monitors -->
+            <div class="hidden lg:flex items-center space-x-6">
+                <div class="flex items-center space-x-1.5 text-[11px] font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span class="text-slate-500">ML ENGINE:</span>
+                    <span class="text-slate-950 font-bold" id="model-status-lbl">ONLINE</span>
+                </div>
+                <div class="flex items-center space-x-1.5 text-[11px] font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-slate-500">API ROUTER:</span>
+                    <span class="text-slate-950 font-bold">ONLINE (8000)</span>
+                </div>
+                <div class="flex items-center space-x-1.5 text-[11px] font-mono">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span class="text-slate-500">TELEMETRY:</span>
+                    <span class="text-slate-950 font-bold">ACTIVE</span>
+                </div>
+            </div>
+
+            <!-- Header Right Info + Logout -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <div class="text-xs font-bold text-slate-900" id="analyst-badge">Analyst-10</div>
+                    <div class="text-[10px] text-slate-400 font-mono" id="header-role-badge">FIU Triage Unit</div>
+                </div>
+                <button onclick="handleLogout()" class="w-8 h-8 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-red-600 transition flex items-center justify-center text-sm shadow-sm" title="Log Out from Workstation">
+                    <i class="fa-solid fa-power-off"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Sidebar + Content Panels -->
+        <div class="flex flex-1 overflow-hidden">
+            
+            <!-- Sidebar Navigation -->
+            <aside class="w-64 bg-white border-r border-slate-200 flex flex-col p-4 space-y-2 z-10 flex-shrink-0">
+                <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider">COMMAND CENTER</div>
+                <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-chart-line text-sm"></i>
+                    <span>Overview Panel</span>
+                </button>
+
+                <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider mt-2">INVESTIGATION</div>
+                <button onclick="switchTab('cases')" id="nav-cases" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-table-list text-sm"></i>
+                    <span>Risk Case Queue</span>
+                </button>
+                <button onclick="switchTab('evaluate')" id="nav-evaluate" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-microscope text-sm"></i>
+                    <span>Evaluate Account</span>
+                </button>
+                <button onclick="switchTab('network')" id="nav-network" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-diagram-project text-sm"></i>
+                    <span>Mule Network Ring</span>
+                </button>
+
+                <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider mt-2">COMPLIANCE</div>
+                <button onclick="switchTab('regulatory')" id="nav-regulatory" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-building-columns text-sm"></i>
+                    <span>Regulatory Intelligence</span>
+                </button>
+
+                <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider mt-2">MODEL INSIGHTS</div>
+                <button onclick="switchTab('model')" id="nav-model" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-sliders text-sm"></i>
+                    <span>Performance Benchmarks</span>
+                </button>
+                <button onclick="switchTab('audit')" id="nav-audit" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-clipboard-check text-sm"></i>
+                    <span>Technical Integrity Audit</span>
+                </button>
+
+                <div class="text-[10px] font-bold font-mono text-slate-400 uppercase px-3 py-1.5 tracking-wider mt-2">SYSTEM CONFIG</div>
+                <button onclick="switchTab('logs')" id="nav-logs" class="nav-item w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                    <i class="fa-solid fa-receipt text-sm"></i>
+                    <span>System Audit Logs</span>
+                </button>
+
+                <div class="mt-auto pt-4 border-t border-slate-200 space-y-3">
+                    <div class="metric-card p-3 text-xs space-y-2">
+                        <div class="flex justify-between font-mono text-[10px]">
+                            <span class="text-slate-500 font-medium">CALIBRATED THRESHOLD</span>
+                            <span id="sidebar-threshold-val" class="font-bold text-blue-600">0.9899</span>
+                        </div>
+                        <input type="range" min="0.50" max="0.999" step="0.001" value="0.9899" disabled class="w-full h-1 bg-slate-200 rounded-lg appearance-none cursor-not-allowed accent-blue-600">
+                        <div class="text-[9px] text-slate-400 leading-tight">Calibrated via Group-Aware CV for Zero False Freezes.</div>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-[9px] text-slate-400 font-medium">Secured with PMLA Compliance Standards</p>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: COMMAND CENTER (Dashboard Overview) -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-dashboard" class="flex-1 overflow-y-auto p-6 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Fraud Operations Command Center</h2>
+                        <p class="text-xs text-slate-500 mt-1">Real-time alerts, operational statistics, and system health monitors.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <button onclick="exportCasesCSV()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition flex items-center space-x-2 shadow-sm">
+                            <i class="fa-solid fa-download"></i>
+                            <span>Export Case Queue (CSV)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- KPI Grid -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="metric-card flex items-center justify-between">
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold tracking-wider uppercase">Total Accounts Evaluated</p>
+                            <h3 id="dash-stat-total" class="text-2xl font-black font-mono text-slate-900 mt-1">9,082</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500 text-lg">
+                            <i class="fa-solid fa-users"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card flex items-center justify-between border-l-4 border-l-red-500">
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold tracking-wider uppercase">Critical Mule Alerts</p>
+                            <h3 id="dash-stat-critical" class="text-2xl font-black font-mono text-red-600 mt-1">87</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center text-red-600 text-lg">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card flex items-center justify-between border-l-4 border-l-orange-500">
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold tracking-wider uppercase">High Risk Alerts</p>
+                            <h3 id="dash-stat-high" class="text-2xl font-black font-mono text-orange-600 mt-1">19</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600 text-lg">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                        </div>
+                    </div>
+                    <div class="metric-card flex items-center justify-between border-l-4 border-l-emerald-500">
+                        <div>
+                            <p class="text-[10px] text-slate-500 font-bold tracking-wider uppercase">Cleared Accounts</p>
+                            <h3 id="dash-stat-cleared" class="text-2xl font-black font-mono text-emerald-600 mt-1">8,934</h3>
+                        </div>
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 text-lg">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Details Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- Left: Recent Anomalous Alerts (2 cols) -->
+                    <div class="lg:col-span-2 metric-card space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-bell text-blue-600 animate-pulse"></i> High-Priority Investigation Alerts
+                            </h3>
+                            <button onclick="switchTab('cases')" class="text-xs text-blue-600 hover:underline">View Case Queue</button>
+                        </div>
+                        <div class="overflow-x-auto min-h-64">
+                            <table class="w-full text-left text-xs font-mono">
+                                <thead class="bg-slate-50 text-slate-500 border-b border-slate-100">
+                                    <tr>
+                                        <th class="px-4 py-2.5">Account ID</th>
+                                        <th class="px-4 py-2.5">Risk Score</th>
+                                        <th class="px-4 py-2.5">Tier</th>
+                                        <th class="px-4 py-2.5">Status</th>
+                                        <th class="px-4 py-2.5">Primary Attributing Signal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dash-recent-tbody" class="divide-y divide-slate-100">
+                                    <!-- Loaded by JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Right: Model Deployment Metadata -->
+                    <div class="metric-card space-y-4">
+                        <div class="border-b border-slate-100 pb-3">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-server text-blue-600"></i> ML Model Metadata Registry
+                            </h3>
+                        </div>
+                        
+                        <div class="space-y-3.5 text-xs">
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-2 font-mono">
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Champion Model:</span>
+                                    <strong class="text-slate-900" id="m-meta-name">XGBoost Classifier</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Model Version:</span>
+                                    <strong class="text-slate-900" id="m-meta-ver">v1.0.0-PRO</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Operating Point:</span>
+                                    <strong class="text-blue-600 font-extrabold" id="m-meta-thresh">0.9899</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>PR-AUC Baseline:</span>
+                                    <strong class="text-slate-900" id="m-meta-prauc">0.8807 ± 0.0403</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Target Precision:</span>
+                                    <strong class="text-emerald-600 font-bold" id="m-meta-prec">1.0000 (100%)</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Target Recall:</span>
+                                    <strong class="text-slate-900" id="m-meta-rec">61.64%</strong>
+                                </div>
+                            </div>
+                            
+                            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl space-y-1.5">
+                                <div class="font-bold text-blue-900 flex items-center gap-1.5">
+                                    <i class="fa-solid fa-shield-halved"></i> Leakage Protection Status
+                                </div>
+                                <p class="text-[11px] text-blue-800 leading-relaxed">
+                                    All 14 post-incident transactional features (including date proxy variables) have been programmatically scrubbed. This model executes predictions strictly on behavioral telemetry.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Real-Time Transaction Stream -->
+                    <div class="metric-card space-y-4">
+                        <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-satellite-dish text-emerald-600 animate-pulse"></i> Live CBS Transaction Feed
+                            </h3>
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-bold font-mono bg-emerald-50 text-emerald-700 border border-emerald-200">STREAMING</span>
+                        </div>
+                        <div id="live-transaction-feed" class="space-y-2.5 max-h-56 overflow-y-auto font-mono text-[10px] leading-relaxed pr-1">
+                            <!-- Populated dynamically via JS -->
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: RISK CASE QUEUE & WORKSPACE -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-cases" class="flex-1 flex overflow-hidden hidden bg-slate-50">
+                <!-- Left Panel: Cases Queue -->
+                <div class="w-1/2 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
+                    <div class="p-4 border-b border-slate-200 bg-slate-50 space-y-3 flex-shrink-0">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Investigation Alert Logs</h3>
+                            <span class="px-2 py-0.5 rounded bg-slate-200 font-mono text-[10px] font-bold text-slate-700" id="queue-count-badge">0 cases</span>
+                        </div>
+
+                        <div class="flex gap-2">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                </div>
+                                <input type="text" id="queue-search" onkeyup="renderQueueTable()" placeholder="Search Account ID..." class="w-full bg-white border border-slate-200 text-xs rounded-xl pl-9 pr-3 py-2 font-mono focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 shadow-sm">
+                            </div>
+
+                            <select id="queue-status-filter" onchange="renderQueueTable()" class="bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-600 shadow-sm font-sans font-medium text-slate-700">
+                                <option value="ALL">ALL STATUSES</option>
+                                <option value="NEW">NEW</option>
+                                <option value="TRIAGED">TRIAGED</option>
+                                <option value="UNDER REVIEW">UNDER REVIEW</option>
+                                <option value="ESCALATED">ESCALATED</option>
+                                <option value="CLOSED">CLOSED</option>
+                            </select>
+                        </div>
+
+                        <!-- Tier Badges Filter -->
+                        <div class="flex items-center space-x-1 bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
+                            <button onclick="setQueueTierFilter('ALL')" class="queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold bg-blue-600 text-white shadow" data-tier="ALL">ALL</button>
+                            <button onclick="setQueueTierFilter('CRITICAL')" class="queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold text-slate-600 hover:text-slate-900" data-tier="CRITICAL">CRITICAL</button>
+                            <button onclick="setQueueTierFilter('HIGH')" class="queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold text-slate-600 hover:text-slate-900" data-tier="HIGH">HIGH</button>
+                            <button onclick="setQueueTierFilter('MEDIUM')" class="queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold text-slate-600 hover:text-slate-900" data-tier="MEDIUM">MEDIUM</button>
+                            <button onclick="setQueueTierFilter('LOW')" class="queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold text-slate-600 hover:text-slate-900" data-tier="LOW">LOW</button>
+                        </div>
+                    </div>
+
+                    <!-- Cases Table Scrollable Container -->
+                    <div class="flex-1 overflow-y-auto min-h-0">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="sticky top-0 bg-slate-100 text-slate-700 border-b border-slate-200 font-bold uppercase text-[10px] shadow-sm z-10 font-mono">
+                                <tr>
+                                    <th class="px-4 py-3">Account ID</th>
+                                    <th class="px-4 py-3">Score</th>
+                                    <th class="px-4 py-3">Tier</th>
+                                    <th class="px-4 py-3">Status</th>
+                                    <th class="px-4 py-3">Top Signal</th>
+                                </tr>
+                            </thead>
+                            <tbody id="queue-tbody" class="divide-y divide-slate-100">
+                                <!-- Loaded dynamically -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Panel: Account Inspector -->
+                <div class="w-1/2 flex flex-col bg-slate-50 overflow-y-auto p-6 space-y-6 min-h-0 pb-16" id="queue-inspector-panel">
+                    <div class="flex flex-col items-center justify-center h-full text-slate-400 text-xs space-y-2">
+                        <i class="fa-solid fa-folder-open text-3xl text-slate-300"></i>
+                        <span>Select an account case folder from the triage list to inspect details</span>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: EVALUATE ACCOUNT (Sandbox Upgrade) -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-evaluate" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-microscope text-blue-600"></i> Ad-Hoc Account Risk Evaluator
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Ingest raw telemetry inputs to run preprocessing, winsorization, and XGBoost classification in real time.</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                            <i class="fa-solid fa-vial"></i> Model Sandbox Pipeline
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Input Section -->
+                    <div class="metric-card space-y-4 flex flex-col">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <div class="flex items-center space-x-2">
+                                <button onclick="toggleSandboxMode('standard')" id="btn-sand-standard" class="px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg shadow-sm">Standard Form</button>
+                                <button onclick="toggleSandboxMode('advanced')" id="btn-sand-advanced" class="px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Advanced JSON</button>
+                            </div>
+                            <button onclick="triggerLoadSamplePayload()" class="text-xs text-blue-600 hover:underline font-bold flex items-center gap-1">
+                                <i class="fa-solid fa-download"></i> Load Verified Sample
+                            </button>
+                        </div>
+
+                        <!-- Standard Form Mode Container -->
+                        <div id="sandbox-form-mode" class="space-y-4 flex-1">
+                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[11px] text-slate-600 leading-relaxed">
+                                Enter the primary behavioral feature values below. Unspecified fields default to dataset medians.
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F994 (Max UPI Inflow Velocity 7D)</label>
+                                    <input type="number" id="f-f994" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F3598 (Transaction Velocity Anomaly 14D)</label>
+                                    <input type="number" id="f-f3598" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F1319 (Outflow / Inflow Balance Spread)</label>
+                                    <input type="number" id="f-f1319" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F1216 (Non-Standard Channel Deviations)</label>
+                                    <input type="number" id="f-f1216" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F3805 (Micro-Cap Transaction Volume)</label>
+                                    <input type="number" id="f-f3805" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-700 uppercase tracking-wide">F1813 (Low Cumulative Turnover Band)</label>
+                                    <input type="number" id="f-f1813" value="0.0" step="any" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-mono focus:outline-none focus:border-blue-600 focus:bg-white">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced JSON Mode Container -->
+                        <div id="sandbox-json-mode" class="hidden flex-1 flex flex-col space-y-2">
+                            <textarea id="sandbox-textarea-payload" class="w-full h-80 bg-slate-900 border border-slate-800 rounded-xl p-4 font-mono text-xs text-emerald-400 focus:outline-none focus:border-blue-600" placeholder='{"F1": 105.2, "F2": 0.04, ...}'></textarea>
+                        </div>
+
+                        <button onclick="runModelPredictionPipeline()" class="w-full py-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-play"></i> Run Inference Pipeline
+                        </button>
+                    </div>
+
+                    <!-- Output Section -->
+                    <div class="metric-card flex flex-col justify-between" id="sandbox-output-display">
+                        <div class="text-center my-auto text-slate-400 text-xs py-12 flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-microchip text-3xl text-slate-300"></i>
+                            <span>Configure inputs and click "Run Inference Pipeline" to run prediction analysis.</span>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: MULE NETWORK RING -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-network" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-diagram-project text-blue-600"></i> Multi-Hop Mule Ring Visualizer
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Illustrative transaction mapping identifying funds routing flow from victim origin to cash-out sinks.</p>
+                    </div>
+                    
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-circle-info text-amber-600"></i> DEMONSTRATION WATERMARK — SIMULATED GRAPH
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-3 gap-6">
+                    <!-- Graph Viewport (2 cols) -->
+                    <div class="col-span-2 metric-card flex flex-col space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Dynamic Transaction Graph</h3>
+                            <span class="text-[10px] text-slate-400 font-mono">Zoom with wheel / Drag nodes to explore</span>
+                        </div>
+                        <div id="vis-network-container" class="rounded-xl border border-slate-200 overflow-hidden shadow-inner"></div>
+                        <div class="flex flex-wrap items-center justify-between text-[11px] font-mono text-slate-500 pt-2 gap-2">
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-blue-100 border border-blue-600 inline-block"></span> Victim Account</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-amber-100 border border-amber-600 inline-block"></span> Feeder Mule</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-red-100 border border-red-600 inline-block"></span> Active Layering Mule</span>
+                            <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded bg-slate-100 border border-slate-600 inline-block"></span> Cash Drain Sink</span>
+                        </div>
+                    </div>
+
+                    <!-- Graph Actions / Metrics (1 col) -->
+                    <div class="space-y-6">
+                        <div class="metric-card space-y-4">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Mule Syndicate Diagnostics</h3>
+                            <div class="space-y-3 text-xs">
+                                <div class="p-3 bg-red-50 border border-red-200 rounded-xl space-y-1">
+                                    <div class="font-extrabold text-red-800 flex justify-between items-center">
+                                        <span>ACTIVE SYNDICATE FLAG</span>
+                                        <span class="font-mono text-[9px] bg-red-200 px-2 py-0.5 rounded text-red-900">MULE-RING-ALPHA</span>
+                                    </div>
+                                    <p class="text-[11px] text-red-700 leading-relaxed">System identified highly correlated rapid routing transfers matching layering structures.</p>
+                                </div>
+                                <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl font-mono space-y-1.5">
+                                    <div class="flex justify-between text-slate-500">
+                                        <span>Total Ring Nodes:</span>
+                                        <strong class="text-slate-900">8 identified</strong>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500">
+                                        <span>Flagged Mules:</span>
+                                        <strong class="text-red-600 font-bold">#9003, #9004, #9006</strong>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500">
+                                        <span>Aggregate Turnover:</span>
+                                        <strong class="text-slate-900">₹6,00,000 in 4m</strong>
+                                    </div>
+                                    <div class="flex justify-between text-slate-500">
+                                        <span>Primary Cash Sink:</span>
+                                        <strong class="text-slate-900">ATM Terminal #402</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="metric-card space-y-3">
+                            <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Topological Controls</h3>
+                            <div class="space-y-2 text-xs">
+                                <button onclick="resetMuleNetworkGraph()" class="w-full py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i class="fa-solid fa-arrow-rotate-right"></i> Reset Network Layout
+                                </button>
+                                <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-[11px] text-blue-800 leading-relaxed font-sans">
+                                    <strong>Network Deep Triage:</strong> Selecting individual node tags in this view allows analysts to pull transaction detail tables from underlying CBS logs.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: REGULATORY INTELLIGENCE -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-regulatory" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-building-columns text-blue-600"></i> Regulatory Watchlist Integration
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Cross-referencing incoming cases against central database feeds.</p>
+                    </div>
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                        <i class="fa-solid fa-database mr-1"></i> Demonstration Dataset Feed
+                    </span>
+                </div>
+
+                <!-- Database Metrics cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="metric-card border-t-4 border-t-red-500 space-y-2">
+                        <div class="flex justify-between items-center font-bold text-xs text-slate-800">
+                            <span>I4C Cyber Fraud DB</span>
+                            <span class="text-[9px] font-mono bg-red-100 text-red-700 px-2 py-0.5 rounded border border-red-200">CONNECTED</span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">National Cyber Crime Reporting Portal repository of reported transaction accounts.</p>
+                        <div class="pt-2 font-mono text-xs font-bold border-t border-slate-100 text-slate-800">
+                            Active Matches: <span class="text-red-600 font-black">87 Alerts</span>
+                        </div>
+                    </div>
+                    <div class="metric-card border-t-4 border-t-emerald-500 space-y-2">
+                        <div class="flex justify-between items-center font-bold text-xs text-slate-800">
+                            <span>CERT-In Botnet Feed</span>
+                            <span class="text-[9px] font-mono bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded border border-emerald-200">SYNCED</span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">Computer Emergency Response Team feed tracking proxy lists and malware IPs.</p>
+                        <div class="pt-2 font-mono text-xs font-bold border-t border-slate-100 text-slate-800">
+                            Active Matches: <span class="text-emerald-600 font-black">0 IPs</span>
+                        </div>
+                    </div>
+                    <div class="metric-card border-t-4 border-t-amber-500 space-y-2">
+                        <div class="flex justify-between items-center font-bold text-xs text-slate-800">
+                            <span>RBI Caution List</span>
+                            <span class="text-[9px] font-mono bg-amber-100 text-amber-700 px-2 py-0.5 rounded border border-amber-200">ACTIVE</span>
+                        </div>
+                        <p class="text-xs text-slate-500 leading-relaxed">Central bank blacklisted entities, watchlists, and restricted accounts.</p>
+                        <div class="pt-2 font-mono text-xs font-bold border-t border-slate-100 text-slate-800">
+                            Active Matches: <span class="text-amber-600 font-black">87 Hits</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Watchlist Matches Grid -->
+                <div class="metric-card space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Watchlist Intersections Table</h3>
+                        <input type="text" id="regulatory-search-input" onkeyup="renderRegulatoryTable()" placeholder="Search Account..." class="border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-mono focus:outline-none focus:border-blue-600 shadow-sm w-48">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs font-mono border-collapse">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
+                                <tr>
+                                    <th class="px-4 py-3">Account Reference</th>
+                                    <th class="px-4 py-3">Risk Classification</th>
+                                    <th class="px-4 py-3">I4C Fraud Registry</th>
+                                    <th class="px-4 py-3">RBI Caution Feed</th>
+                                    <th class="px-4 py-3">Operational Directive</th>
+                                </tr>
+                            </thead>
+                            <tbody id="regulatory-tbody" class="divide-y divide-slate-100">
+                                <!-- Loaded dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: MODEL INSIGHTS -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-model" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-chart-line text-blue-600"></i> Model Performance Benchmarks
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Leakage-controlled evaluation results verified against the historical database.</p>
+                    </div>
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                        XGBoost Champion Model
+                    </span>
+                </div>
+
+                <!-- Baseline Table -->
+                <div class="metric-card space-y-4">
+                    <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Stratified 5-Fold Group-Aware CV Benchmark</h3>
+                    <table class="w-full text-left text-xs font-mono">
+                        <thead class="bg-slate-50 text-slate-500 border-b border-slate-200">
+                            <tr>
+                                <th class="px-4 py-3">Algorithm Class</th>
+                                <th class="px-4 py-3">PR-AUC (Mean ± Std)</th>
+                                <th class="px-4 py-3">F1-Score</th>
+                                <th class="px-4 py-3">Recall</th>
+                                <th class="px-4 py-3">Precision</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            <tr class="bg-blue-50/60 font-bold text-blue-800">
+                                <td class="px-4 py-3">XGBoost (Selected Champion)</td>
+                                <td class="px-4 py-3" id="meta-prauc">0.8807 ± 0.0403</td>
+                                <td class="px-4 py-3" id="meta-f1">0.7586</td>
+                                <td class="px-4 py-3" id="meta-rec">0.6164 (61.64%)</td>
+                                <td class="px-4 py-3" id="meta-prec">1.0000 (100.00%)</td>
+                            </tr>
+                            <tr class="text-slate-700">
+                                <td class="px-4 py-3">Random Forest</td>
+                                <td class="px-4 py-3">0.7845 ± 0.1001</td>
+                                <td class="px-4 py-3">0.5539 ± 0.1474</td>
+                                <td class="px-4 py-3">0.4033 ± 0.1539</td>
+                                <td class="px-4 py-3">0.9770 ± 0.0587</td>
+                            </tr>
+                            <tr class="text-slate-700">
+                                <td class="px-4 py-3">Logistic Regression</td>
+                                <td class="px-4 py-3">0.6652 ± 0.1035</td>
+                                <td class="px-4 py-3">0.6447 ± 0.0752</td>
+                                <td class="px-4 py-3">0.6037 ± 0.1123</td>
+                                <td class="px-4 py-3">0.7058 ± 0.0777</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Explanation Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="metric-card space-y-3">
+                        <div class="flex items-center space-x-2 text-blue-900">
+                            <i class="fa-solid fa-filter-circle-xmark text-lg"></i>
+                            <h4 class="text-xs font-bold uppercase tracking-wide">Target Leakage Controls</h4>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Scrubbed 12 post-incident investigation resolution flags and 2 temporal date proxy columns to ensure the model makes inferences based on real transaction patterns rather than data artifacts.
+                        </p>
+                    </div>
+                    <div class="metric-card space-y-3">
+                        <div class="flex items-center space-x-2 text-blue-900">
+                            <i class="fa-solid fa-users-rectangle text-lg"></i>
+                            <h4 class="text-xs font-bold uppercase tracking-wide">Group-Aware Cross-Validation</h4>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Grouped similar account profiles (based on >0.99 cosine similarity) to keep duplicate entities isolated within the same validation folds. This prevents data contamination during evaluation.
+                        </p>
+                    </div>
+                    <div class="metric-card space-y-3 border-l-4 border-l-blue-600">
+                        <div class="flex items-center space-x-2 text-blue-900">
+                            <i class="fa-solid fa-compass-drafting text-lg"></i>
+                            <h4 class="text-xs font-bold uppercase tracking-wide">Threshold Calibration</h4>
+                        </div>
+                        <p class="text-xs text-slate-600 leading-relaxed">
+                            Calibrated the decision boundary to <strong class="text-blue-600 font-extrabold" id="meta-thresh-text">0.9899</strong> to achieve 100% precision on validation splits. This configuration enforces zero false freezes.
+                        </p>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: TECHNICAL INTEGRITY AUDIT -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-audit" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-clipboard-check text-blue-600"></i> Technical Integrity Audit Checklist
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Status checks verifying compliance and ML pipeline validation parameters.</p>
+                    </div>
+                    <span class="px-3.5 py-1.5 rounded-full text-xs font-bold font-mono bg-blue-50 text-blue-700 border border-blue-200">
+                        Audit Standard v1.0.0
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="metric-card space-y-4">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Pipeline Integrity Auditing Checklist</h3>
+                        <div class="space-y-3.5 text-xs font-mono">
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Model Weights Registry Preserved
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Fitted Preprocessor Artifact Sealed
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Forensic Target Leakage Scrubbed
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Group-Aware Cross-Validation Strategy
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Fold-Local Resampling Isolated
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                            <div class="flex items-center justify-between p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                                <span class="flex items-center gap-2 text-slate-700">
+                                    <i class="fa-solid fa-circle-check text-emerald-500"></i> Ad-Hoc Pipeline Validation Schema
+                                </span>
+                                <span class="text-[10px] text-slate-400">VERIFIED</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card space-y-4">
+                        <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Verification Artifact Reference</h3>
+                        <div class="space-y-3.5 text-xs leading-relaxed">
+                            <div class="p-3.5 bg-blue-50 border border-blue-200 rounded-xl text-blue-900">
+                                <h4 class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-file-invoice"></i> Model Calibration</h4>
+                                <p class="text-[11px] text-blue-800 mt-1">
+                                    The pre-compiled metrics, threshold settings, and feature filters have been locked in the model configuration. The pipeline processes raw attributes without retraining features during triage.
+                                </p>
+                            </div>
+                            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-700">
+                                <h4 class="font-bold font-mono text-slate-800 flex items-center gap-1.5"><i class="fa-solid fa-terminal"></i> Reproducibility Entrypoint</h4>
+                                <p class="text-[11px] text-slate-600 mt-1">
+                                    You can verify model metrics by executing the terminal diagnostic scripts in the repository:
+                                </p>
+                                <pre class="mt-2 p-2 bg-slate-900 text-emerald-400 rounded text-[10px] font-mono">python run_our_model.py</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+            <!-- ------------------------------------------------------------- -->
+            <!-- TAB: SYSTEM AUDIT LOGS -->
+            <!-- ------------------------------------------------------------- -->
+            <main id="tab-logs" class="flex-1 overflow-y-auto p-8 space-y-6 hidden">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
+                    <div>
+                        <h2 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <i class="fa-solid fa-receipt text-blue-600"></i> System Audit Trail
+                        </h2>
+                        <p class="text-xs text-slate-500 mt-1">Immutable session log tracking analyst investigations and system events.</p>
+                    </div>
+                    <button onclick="fetchAuditLogs()" class="px-3.5 py-2 rounded-xl bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition flex items-center space-x-2 shadow-sm">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Refresh Logs</span>
+                    </button>
+                </div>
+
+                <div class="metric-card space-y-4">
+                    <div class="overflow-x-auto min-h-96">
+                        <table class="w-full text-left text-xs font-mono">
+                            <thead class="bg-slate-50 text-slate-500 border-b border-slate-200 font-bold">
+                                <tr>
+                                    <th class="px-4 py-3">Timestamp Log</th>
+                                    <th class="px-4 py-3">Operations Actor</th>
+                                    <th class="px-4 py-3">Action Item</th>
+                                    <th class="px-4 py-3">Case ID</th>
+                                    <th class="px-4 py-3">Execution Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="audit-logs-tbody" class="divide-y divide-slate-100">
+                                <!-- Loaded dynamically by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+
+        </div>
+    </div>
+
+    <!-- CLIENT SCRIPT -->
+    <script>
+        let allCases = [];
+        let selectedCaseId = null;
+        let activeTab = 'dashboard';
+        let currentQueueFilter = 'ALL';
+        let modelMetadata = {};
+        
+        // Form & Sandbox fields
+        let sandboxMode = 'standard'; // 'standard' or 'advanced'
+
+        // Authentication State & Roles
+        let activeAnalyst = 'Analyst-10';
+        let activeRole = 'ANALYST';
+        let liveFeedInterval = null;
+
+        function toggleAuthView(view) {
+            if (view === 'signup') {
+                document.getElementById('login-form-view').classList.add('hidden');
+                document.getElementById('signup-form-view').classList.remove('hidden');
+            } else {
+                document.getElementById('login-form-view').classList.remove('hidden');
+                document.getElementById('signup-form-view').classList.add('hidden');
+            }
+        }
+
+        function checkAuthentication() {
+            const auth = sessionStorage.getItem("muleshield_authenticated");
+            if (auth === "true") {
+                document.getElementById('login-gate').classList.add('hidden');
+                document.getElementById('app-shell').classList.remove('hidden');
+                
+                const userEmail = sessionStorage.getItem("muleshield_user_email") || "analyst@muleshield.psb";
+                const userRole = sessionStorage.getItem("muleshield_user_role") || "ANALYST";
+                activeAnalyst = userEmail.split('@')[0];
+                activeRole = userRole;
+
+                document.getElementById('analyst-badge').innerText = activeAnalyst;
+                document.getElementById('header-role-badge').innerText = activeRole === 'ANALYST' ? 'Fraud Analyst' : (activeRole === 'MANAGER' ? 'Operations Manager' : 'Compliance Auditor');
+                initApp();
+            } else {
+                document.getElementById('login-gate').classList.remove('hidden');
+                document.getElementById('app-shell').classList.add('hidden');
+                if (liveFeedInterval) {
+                    clearInterval(liveFeedInterval);
+                    liveFeedInterval = null;
+                }
+            }
+        }
+
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            try {
+                const res = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    alert("Authentication Error: " + (data.error || "Invalid credentials"));
+                    return;
+                }
+                
+                sessionStorage.setItem("muleshield_authenticated", "true");
+                sessionStorage.setItem("muleshield_user_email", data.email);
+                sessionStorage.setItem("muleshield_user_role", data.role);
+                checkAuthentication();
+            } catch (err) {
+                console.error("Login request failed:", err);
+                alert("Connection Error: Unable to reach auth service.");
+            }
+        }
+
+        async function handleSignup(e) {
+            e.preventDefault();
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const role = document.getElementById('signup-role').value;
+            
+            try {
+                const res = await fetch('/api/auth/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, role })
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    alert("Registration Error: " + (data.error || "Failed registering user"));
+                    return;
+                }
+                
+                alert("Success: Account registered under ID: " + data.email + "\nPlease log in to access your workstation.");
+                toggleAuthView('login');
+                document.getElementById('login-email').value = data.email;
+                document.getElementById('login-password').value = '';
+            } catch (err) {
+                console.error("Signup request failed:", err);
+                alert("Connection Error: Unable to reach registration service.");
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem("muleshield_authenticated");
+            sessionStorage.removeItem("muleshield_user_email");
+            sessionStorage.removeItem("muleshield_user_role");
+            checkAuthentication();
+        }
+
+        // Tab Router
+        function switchTab(tabId) {
+            activeTab = tabId;
+            document.querySelectorAll('main').forEach(m => m.classList.add('hidden'));
+            
+            const activeMain = document.getElementById('tab-' + tabId);
+            if (activeMain) {
+                activeMain.classList.remove('hidden');
+            }
+
+            // Remove active classes
+            document.querySelectorAll('.nav-item').forEach(btn => {
+                btn.classList.remove('active-sidebar-item');
+                btn.classList.add('text-slate-600');
+            });
+
+            const activeNav = document.getElementById('nav-' + tabId);
+            if (activeNav) {
+                activeNav.classList.add('active-sidebar-item');
+                activeNav.classList.remove('text-slate-600');
+            }
+
+            // Special initializations
+            if (tabId === 'network') {
+                setTimeout(initMuleNetworkGraph, 100);
+            } else if (tabId === 'logs') {
+                fetchAuditLogs();
+            }
+        }
+
+        // Initialize Data
+        async function initApp() {
+            await fetchModelMetadata();
+            await fetchCasesData();
+            switchTab('dashboard');
+            runLiveTransactionFeed();
+        }
+
+        async function fetchModelMetadata() {
+            try {
+                const res = await fetch('/api/model/metadata');
+                const data = await res.json();
+                modelMetadata = data;
+
+                // Load to metadata UI fields
+                document.getElementById('m-meta-name').innerText = data.model_name;
+                document.getElementById('m-meta-ver').innerText = data.model_version;
+                document.getElementById('m-meta-thresh').innerText = data.threshold.toFixed(4);
+                document.getElementById('m-meta-prauc').innerText = `${data.pr_auc.toFixed(4)} ± ${data.pr_auc_std.toFixed(4)}`;
+                document.getElementById('m-meta-prec').innerText = `${(data.precision * 100).toFixed(2)}% (${data.precision.toFixed(4)})`;
+                document.getElementById('m-meta-rec').innerText = `${(data.recall * 100).toFixed(2)}%`;
+
+                // Update performance tab details
+                document.getElementById('meta-prauc').innerText = `${data.pr_auc.toFixed(4)} ± ${data.pr_auc_std.toFixed(4)}`;
+                document.getElementById('meta-f1').innerText = data.f1.toFixed(4);
+                document.getElementById('meta-rec').innerText = `${(data.recall * 100).toFixed(2)}%`;
+                document.getElementById('meta-prec').innerText = `${(data.precision * 100).toFixed(2)}%`;
+                document.getElementById('meta-thresh-text').innerText = data.threshold.toFixed(4);
+            } catch (err) {
+                console.error("Failed loading model metadata:", err);
+                document.getElementById('model-status-lbl').innerHTML = `<span class="text-red-600">DEGRADED</span>`;
+            }
+        }
+
+        async function fetchCasesData() {
+            try {
+                const res = await fetch('/api/cases');
+                const data = await res.json();
+                allCases = data.cases || [];
+
+                // Bind counters in dashboard
+                if (data.summary) {
+                    document.getElementById('dash-stat-total').innerText = data.summary.total_evaluated.toLocaleString();
+                    document.getElementById('dash-stat-critical').innerText = data.summary.critical_alerts.toLocaleString();
+                    document.getElementById('dash-stat-high').innerText = data.summary.high_risk.toLocaleString();
+                    document.getElementById('dash-stat-cleared').innerText = data.summary.cleared_accounts.toLocaleString();
+                }
+
+                document.getElementById('queue-count-badge').innerText = `${allCases.length} cases`;
+
+                // Render Table queues
+                renderQueueTable();
+                renderRegulatoryTable();
+                renderDashboardAlerts();
+                
+                if (allCases.length > 0) {
+                    selectQueueCase(allCases[0].account_id);
+                }
+            } catch (err) {
+                console.error("Failed fetching queue cases:", err);
+            }
+        }
+
+        // Render dashboard small list
+        function renderDashboardAlerts() {
+            const tbody = document.getElementById('dash-recent-tbody');
+            if (!tbody) return;
+
+            const highRisk = allCases.filter(c => c.tier === 'Critical' || c.tier === 'High').slice(0, 5);
+            tbody.innerHTML = highRisk.map(c => `
+                <tr class="hover:bg-slate-50 transition cursor-pointer" onclick="switchTab('cases'); selectQueueCase(${c.account_id})">
+                    <td class="px-4 py-2.5 font-bold text-slate-900">#${c.account_id}</td>
+                    <td class="px-4 py-2.5 font-bold text-blue-600">${c.risk_score.toFixed(4)}</td>
+                    <td class="px-4 py-2.5">${getBadgeHTML(c.tier)}</td>
+                    <td class="px-4 py-2.5"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusStyle(c.status)}">${c.status}</span></td>
+                    <td class="px-4 py-2.5 text-slate-500 font-sans">${c.top_shap_drivers[0]} Anomaly Driver</td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter badges styles
+        function getStatusStyle(status) {
+            switch(status) {
+                case 'NEW': return 'bg-red-50 text-red-700 border-red-200';
+                case 'TRIAGED': return 'bg-blue-50 text-blue-700 border-blue-200';
+                case 'UNDER REVIEW': return 'bg-amber-50 text-amber-700 border-amber-200';
+                case 'ESCALATED': return 'bg-purple-50 text-purple-700 border-purple-200';
+                case 'CLOSED': return 'bg-slate-50 text-slate-600 border-slate-200';
+                default: return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+            }
+        }
+
+        function getBadgeHTML(tier) {
+            switch(tier) {
+                case 'Critical': return `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-red-100 text-red-800 border border-red-200 font-mono">CRITICAL</span>`;
+                case 'High': return `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-orange-100 text-orange-800 border border-orange-200 font-mono">HIGH</span>`;
+                case 'Medium': return `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-yellow-100 text-yellow-800 border border-yellow-200 font-mono">MEDIUM</span>`;
+                default: return `<span class="px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 font-mono">LOW</span>`;
+            }
+        }
+
+        // Set queue tier filter
+        function setQueueTierFilter(tier) {
+            currentQueueFilter = tier;
+            document.querySelectorAll('.queue-tier-filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-tier') === tier) {
+                    btn.className = "queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold bg-blue-600 text-white shadow";
+                } else {
+                    btn.className = "queue-tier-filter-btn flex-1 py-1 text-[10px] rounded-lg font-extrabold text-slate-600 hover:text-slate-900";
+                }
+            });
+            renderQueueTable();
+        }
+
+        // Render Main Cases Queue
+        function renderQueueTable() {
+            const tbody = document.getElementById('queue-tbody');
+            if (!tbody) return;
+
+            const search = document.getElementById('queue-search').value.toLowerCase();
+            const statusFilter = document.getElementById('queue-status-filter').value;
+
+            const filtered = allCases.filter(c => {
+                const matchSearch = search === '' || c.account_id.toString().includes(search);
+                const matchStatus = statusFilter === 'ALL' || c.status === statusFilter;
+                const matchTier = currentQueueFilter === 'ALL' || c.tier.toUpperCase() === currentQueueFilter;
+                return matchSearch && matchStatus && matchTier;
+            });
+
+            tbody.innerHTML = filtered.map(c => {
+                const isSelected = selectedCaseId === c.account_id;
+                return `
+                    <tr onclick="selectQueueCase(${c.account_id})" class="cursor-pointer hover:bg-slate-50 transition ${isSelected ? 'bg-blue-50/60 font-semibold border-l-4 border-blue-600' : ''}">
+                        <td class="px-4 py-3 font-bold text-slate-900">#${c.account_id}</td>
+                        <td class="px-4 py-3 font-bold text-blue-700">${c.risk_score.toFixed(4)}</td>
+                        <td class="px-4 py-3">${getBadgeHTML(c.tier)}</td>
+                        <td class="px-4 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusStyle(c.status)}">${c.status}</span></td>
+                        <td class="px-4 py-3 font-mono text-slate-500 truncate max-w-[100px]">${c.top_shap_drivers[0]}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Select Case & Populate Inspector Workspace
+        async function selectQueueCase(accId) {
+            selectedCaseId = accId;
+            
+            // Highlight row in list
+            document.querySelectorAll('#queue-tbody tr').forEach(row => {
+                row.classList.remove('bg-blue-50/60', 'font-semibold', 'border-l-4', 'border-blue-600');
+            });
+            
+            const panel = document.getElementById('queue-inspector-panel');
+            panel.innerHTML = `<div class="flex justify-center items-center h-full text-slate-400 text-xs"><i class="fa-solid fa-spinner animate-spin mr-2"></i> Loading case metadata folder...</div>`;
+
+            try {
+                const res = await fetch(`/api/cases/${accId}`);
+                const data = await res.json();
+
+                // Format attributes list
+                let attrRows = '';
+                for (const [k, v] of Object.entries(data.raw_attributes)) {
+                    attrRows += `
+                        <div class="flex justify-between border-b border-slate-100 py-1.5 font-mono">
+                            <span class="text-slate-500">${k}:</span>
+                            <span class="text-slate-950 font-bold">${v}</span>
+                        </div>
+                    `;
+                }
+
+                // Render notes log
+                let notesLog = data.notes.map(n => `
+                    <div class="p-3 bg-white border border-slate-200 rounded-xl space-y-1">
+                        <div class="flex justify-between font-mono text-[9px] text-slate-400">
+                            <span>BY: ${n.analyst}</span>
+                            <span>${n.timestamp}</span>
+                        </div>
+                        <p class="text-xs text-slate-700 font-medium leading-relaxed">${n.text}</p>
+                    </div>
+                `).join('');
+
+                // Render timeline log
+                let timelineLog = data.timeline.map(t => `
+                    <div class="flex gap-3">
+                        <div class="flex flex-col items-center">
+                            <div class="w-2.5 h-2.5 rounded-full bg-blue-600"></div>
+                            <div class="w-0.5 h-full bg-slate-200 my-0.5"></div>
+                        </div>
+                        <div class="space-y-0.5 pb-3">
+                            <div class="font-mono text-[9px] text-slate-400">${t.timestamp}</div>
+                            <div class="text-xs font-bold text-slate-900">${t.event}</div>
+                            <p class="text-xs text-slate-500 font-medium">${t.detail}</p>
+                        </div>
+                    </div>
+                `).join('');
+
+                panel.innerHTML = `
+                    <!-- Case Inspector Header -->
+                    <div class="metric-card space-y-4">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="text-[9px] font-mono text-slate-400">FOLDER SYSTEM REF: MULE-${data.account_id}</span>
+                                <h3 class="text-2xl font-black font-mono text-slate-950 mt-0.5">Account Profile #${data.account_id}</h3>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-3xl font-black font-mono text-blue-700 leading-tight">${data.risk_score.toFixed(4)}</div>
+                                <span class="text-[10px] text-slate-500 font-mono">Model Score</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-wrap items-center gap-3 border-t border-slate-100 pt-3 text-xs">
+                            <span class="flex items-center gap-1">${getBadgeHTML(data.tier)}</span>
+                            <span class="flex items-center gap-1 font-mono">
+                                <span class="text-slate-400">STATUS:</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusStyle(data.status)}">${data.status}</span>
+                            </span>
+                            <span class="flex items-center gap-1 font-mono">
+                                <span class="text-slate-400">ANALYST:</span>
+                                <span class="text-slate-800 font-bold">${data.assigned_analyst}</span>
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Layout splits: Left (Details & Drivers) | Right (Regulatory & Status controls) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- Col 1: SHAP Drivers & Features -->
+                        <div class="space-y-6">
+                            <!-- SHAP Attributions -->
+                            <div class="metric-card space-y-4">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide flex items-center gap-1.5">
+                                    <i class="fa-solid fa-bolt text-amber-500"></i> Key Anomaly SHAP Attribution Drivers
+                                </h4>
+                                <div class="space-y-2.5">
+                                    ${data.top_shap_drivers.map(f => {
+                                        const domainMap = {
+                                            'F994': 'Max UPI Transaction Velocity (Last 7D High-Volume Inflow)',
+                                            'F3598': 'Customer-Induced Transaction Deviation (14D Velocity Anomaly)',
+                                            'F3348_ismissing': 'Uninterpretable Anonymised Feature (Systemic Field Omission)',
+                                            'F1319': 'Possible Fund-Flow-Ratio-like Signal (Outflow / Inflow Balance)',
+                                            'F1216': 'Time-of-Day / Channel Anomaly (Non-Standard Channel)',
+                                            'F3805': 'Transaction Volume / Balance Cap (Micro-Cap Account Anomaly)',
+                                            'F3922': 'Uninterpretable Anonymised Feature (Activity Sub-Count)',
+                                            'F2289_ismissing': 'Behavioural Deviation (Forced Onboarding Field)',
+                                            'F3240_ismissing': 'Uninterpretable Anonymised Feature (Systemic Field Omission)',
+                                            'F1813': 'Transaction Velocity / Turnover Band (Low Cumulative Turnover)'
+                                        };
+                                        return `
+                                            <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1">
+                                                <div class="flex justify-between items-center text-xs font-mono font-bold">
+                                                    <span class="text-blue-900"># ${f}</span>
+                                                    <span class="text-red-700 bg-red-50 border border-red-200 px-2 py-0.5 rounded text-[10px]">ANOMALOUS CONTRIBUTION</span>
+                                                </div>
+                                                <p class="text-[11px] text-slate-600 leading-relaxed font-sans">${domainMap[f] || 'Behavioral Feature Attributor'}</p>
+                                            </div>
+                                        `;
+                                    }).join('')}
+                                </div>
+                            </div>
+
+                            <!-- Raw Attributes -->
+                            <div class="metric-card space-y-3">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide border-b border-slate-100 pb-2">Behavioral Telemetry Logs</h4>
+                                <div class="space-y-1 max-h-56 overflow-y-auto text-xs pr-1">
+                                    ${attrRows}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Col 2: Action Controls, Notes, Timeline -->
+                        <div class="space-y-6">
+                            <!-- Case Action Controls -->
+                            <div class="metric-card space-y-4">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Investigation Controls</h4>
+                                
+                                <div class="grid grid-cols-2 gap-2 text-xs">
+                                    <div class="col-span-2 space-y-1.5 border-b border-slate-100 pb-3">
+                                        <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wide">Update Case lifecycle</label>
+                                        <div class="flex gap-2">
+                                            <select id="ins-status-select" class="flex-1 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-blue-600 font-sans font-semibold text-slate-800 shadow-sm">
+                                                <option value="NEW" ${data.status === 'NEW' ? 'selected' : ''}>NEW</option>
+                                                <option value="TRIAGED" ${data.status === 'TRIAGED' ? 'selected' : ''}>TRIAGED</option>
+                                                <option value="UNDER REVIEW" ${data.status === 'UNDER REVIEW' ? 'selected' : ''}>UNDER REVIEW</option>
+                                                <option value="ESCALATED" ${data.status === 'ESCALATED' ? 'selected' : ''}>ESCALATED</option>
+                                                <option value="CLOSED" ${data.status === 'CLOSED' ? 'selected' : ''}>CLOSED</option>
+                                            </select>
+                                            <button onclick="submitCaseStatusUpdate(${data.account_id})" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm transition">Update</button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Report Downloads -->
+                                    <a href="/api/cases/${data.account_id}/download-pdf" class="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center">
+                                        <i class="fa-solid fa-file-pdf text-red-600"></i> Download PDF
+                                    </a>
+                                    <a href="/api/cases/${data.account_id}/download-json" class="py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 transition text-slate-700 font-bold flex items-center justify-center gap-1.5 shadow-sm text-center font-mono text-[11px]">
+                                        <i class="fa-solid fa-file-code text-blue-600"></i> Download JSON
+                                    </a>
+                                    
+                                    <button onclick="submitCBSFreezeTrigger(${data.account_id})" class="col-span-2 py-3 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold transition flex items-center justify-center gap-2 shadow shadow-red-600/10">
+                                        <i class="fa-solid fa-lock"></i>
+                                        <span>Confirm Emergency CBS Debit Freeze</span>
+                                    </button>
+                                    
+                                    <button onclick="triggerGenerateSTRDraft(${data.account_id})" class="col-span-2 py-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                                        <i class="fa-solid fa-file-invoice"></i>
+                                        <span>Generate compliance STR Draft</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Case Notes Log -->
+                            <div class="metric-card space-y-4">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Investigation Notes Log</h4>
+                                <div class="space-y-2.5 max-h-60 overflow-y-auto text-xs pr-1">
+                                    ${notesLog}
+                                </div>
+                                <div class="pt-2 border-t border-slate-100 flex flex-col gap-2">
+                                    <textarea id="ins-note-input" placeholder="Type new case note details here..." class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs focus:outline-none focus:border-blue-600 focus:bg-white h-20"></textarea>
+                                    <button onclick="submitCaseNote(${data.account_id})" class="py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm transition">Add Note Entry</button>
+                                </div>
+                            </div>
+
+                            <!-- Timeline -->
+                            <div class="metric-card space-y-4">
+                                <h4 class="text-xs font-bold text-slate-800 uppercase tracking-wide">Case Lifecycle Timeline</h4>
+                                <div class="space-y-1 max-h-64 overflow-y-auto pr-1">
+                                    ${timelineLog}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                `;
+            } catch (err) {
+                console.error("Failed loading inspected case details:", err);
+            }
+        }
+
+        // Change Case Status API Call
+        async function submitCaseStatusUpdate(accId) {
+            const statusSelect = document.getElementById('ins-status-select');
+            const status = statusSelect.value;
+            try {
+                const res = await fetch(`/api/cases/${accId}/status`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: status, analyst: activeAnalyst })
+                });
+                const data = await res.json();
+                
+                // Refresh case queues & logs
+                await fetchCasesData();
+                selectQueueCase(accId);
+            } catch (err) {
+                console.error("Status update request failed:", err);
+            }
+        }
+
+        // Add Case Note API Call
+        async function submitCaseNote(accId) {
+            const textarea = document.getElementById('ins-note-input');
+            const text = textarea.value.trim();
+            if (!text) return;
+
+            try {
+                const res = await fetch(`/api/cases/${accId}/notes`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ note: text, analyst: activeAnalyst })
+                });
+                const data = await res.json();
+                
+                // Clear note input and refresh display
+                textarea.value = '';
+                selectQueueCase(accId);
+            } catch (err) {
+                console.error("Note submit request failed:", err);
+            }
+        }
+
+        // simulated CBS Freeze Trigger API Call
+        async function submitCBSFreezeTrigger(accId) {
+            if (!confirm(`Are you sure you want to execute an emergency Core Banking System (CBS) debit freeze on account #${accId}?`)) {
+                return;
+            }
+            try {
+                const res = await fetch(`/api/cases/${accId}/cbs-freeze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ analyst: activeAnalyst })
+                });
+                const data = await res.json();
+                
+                alert(`EMERGENCY CBS FREEZE LOCKED SUCCESS\nReference Receipt: ${data.ref_no}`);
+                
+                // Refresh case queue
+                await fetchCasesData();
+                selectQueueCase(accId);
+            } catch (err) {
+                console.error("CBS freeze simulation request failed:", err);
+            }
+        }
+
+        // Simulated STR Draft Generation API Call
+        async function triggerGenerateSTRDraft(accId) {
+            try {
+                const res = await fetch(`/api/cases/${accId}/str-draft`, { method: 'POST' });
+                const data = await res.json();
+                
+                // Open modal or dialog with preformatted text box
+                const modal = document.createElement('div');
+                modal.className = "fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[999] flex items-center justify-center p-6";
+                modal.innerHTML = `
+                    <div class="bg-white border border-slate-200 w-full max-w-2xl p-6 rounded-2xl shadow-2xl space-y-4">
+                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                            <h3 class="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-invoice text-blue-600"></i> Compliance STR draft Document
+                            </h3>
+                            <button onclick="this.closest('.fixed').remove()" class="text-slate-400 hover:text-slate-600 text-lg"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                        <pre class="p-4 bg-slate-900 text-emerald-400 font-mono text-[11px] rounded-xl border border-slate-800 overflow-x-auto whitespace-pre-wrap leading-relaxed max-h-96">${data.str_draft}</pre>
+                        <div class="flex justify-end gap-2 text-xs">
+                            <button onclick="navigator.clipboard.writeText(\`${data.str_draft.replace(/`/g, '\\`').replace(/\$/g, '\\$')}\`); alert('Copied report to clipboard!')" class="px-4 py-2.5 border border-slate-200 hover:bg-slate-50 transition rounded-xl font-bold text-slate-700">Copy to Clipboard</button>
+                            <button onclick="this.closest('.fixed').remove()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 transition rounded-xl font-bold text-white shadow-sm">Done</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            } catch (err) {
+                console.error("Failed generating compliance STR draft:", err);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // ACCOUNT EVALUATOR (SANDBOX UPGRADE) HANDLERS
+        // -------------------------------------------------------------
+        function toggleSandboxMode(mode) {
+            sandboxMode = mode;
+            document.getElementById('btn-sand-standard').className = mode === 'standard' ? 'px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg shadow-sm' : 'px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg';
+            document.getElementById('btn-sand-advanced').className = mode === 'advanced' ? 'px-3 py-1.5 text-xs font-bold bg-blue-600 text-white rounded-lg shadow-sm' : 'px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg';
+            
+            if (mode === 'standard') {
+                document.getElementById('sandbox-form-mode').classList.remove('hidden');
+                document.getElementById('sandbox-json-mode').classList.add('hidden');
+            } else {
+                document.getElementById('sandbox-form-mode').classList.add('hidden');
+                document.getElementById('sandbox-json-mode').classList.remove('hidden');
+            }
+        }
+
+        async function triggerLoadSamplePayload() {
+            try {
+                const res = await fetch('/api/sample-mule-payload');
+                const data = await res.json();
+                
+                // Write into form fields
+                document.getElementById('f-f994').value = data.F994 || 0.0;
+                document.getElementById('f-f3598').value = data.F3598 || 0.0;
+                document.getElementById('f-f1319').value = data.F1319 || 0.0;
+                document.getElementById('f-f1216').value = data.F1216 || 0.0;
+                document.getElementById('f-f3805').value = data.F3805 || 0.0;
+                document.getElementById('f-f1813').value = data.F1813 || 0.0;
+
+                // Write into JSON textarea
+                document.getElementById('sandbox-textarea-payload').value = JSON.stringify(data, null, 2);
+                alert("Verified demonstration sample payload loaded successfully.");
+            } catch (err) {
+                console.error("Failed loading sample payload:", err);
+            }
+        }
+
+        async function runModelPredictionPipeline() {
+            const display = document.getElementById('sandbox-output-display');
+            display.innerHTML = `
+                <div class="my-auto space-y-4 p-8 text-center text-xs font-mono text-slate-500 max-w-sm mx-auto">
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-center text-emerald-600">
+                            <span>1. VALIDATING SCHEMA</span>
+                            <span class="font-bold">✓</span>
+                        </div>
+                        <div class="flex justify-between items-center text-emerald-600">
+                            <span>2. REMOVING TARGET LEAKAGE</span>
+                            <span class="font-bold">✓</span>
+                        </div>
+                        <div class="flex justify-between items-center text-emerald-600">
+                            <span>3. RUNNING PREPROCESSOR</span>
+                            <span class="font-bold">✓</span>
+                        </div>
+                        <div class="flex justify-between items-center text-blue-600 font-bold">
+                            <span class="animate-pulse">4. EVALUATING XGBOOST MODEL</span>
+                            <i class="fa-solid fa-spinner animate-spin"></i>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            let payloadFeatures = {};
+            if (sandboxMode === 'standard') {
+                payloadFeatures = {
+                    "F994": parseFloat(document.getElementById('f-f994').value) || 0.0,
+                    "F3598": parseFloat(document.getElementById('f-f3598').value) || 0.0,
+                    "F1319": parseFloat(document.getElementById('f-f1319').value) || 0.0,
+                    "F1216": parseFloat(document.getElementById('f-f1216').value) || 0.0,
+                    "F3805": parseFloat(document.getElementById('f-f3805').value) || 0.0,
+                    "F1813": parseFloat(document.getElementById('f-f1813').value) || 0.0
+                };
+            } else {
+                try {
+                    payloadFeatures = JSON.parse(document.getElementById('sandbox-textarea-payload').value);
+                } catch (err) {
+                    display.innerHTML = `<div class="text-center my-auto text-xs text-red-600"><i class="fa-solid fa-circle-xmark"></i> JSON Syntax Error. Check brackets.</div>`;
+                    return;
+                }
+            }
+
+            // Simulate small delay for processing visual feedback
+            setTimeout(async () => {
+                try {
+                    const res = await fetch('/api/predict', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ account_features: payloadFeatures })
+                    });
+                    const data = await res.json();
+
+                    let evalStatusCard = '';
+                    if (data.tier === 'Critical') {
+                        evalStatusCard = `
+                            <div class="p-4 rounded-xl border border-red-200 bg-red-50/50 space-y-2.5 text-xs text-red-950 font-medium">
+                                <div class="flex justify-between items-center">
+                                    <span>Model Classification:</span>
+                                    <span class="font-mono font-bold bg-red-100 border border-red-200 px-2.5 py-0.5 rounded text-red-800">CRITICAL MULE ALERT</span>
+                                </div>
+                                <p class="text-[11px] text-red-700 leading-relaxed">
+                                    This account's score exceeded the calibrated boundary limit (<strong class="font-bold">0.9899</strong>) enforcing 100% precision. System recommends emergency CBS freeze.
+                                </p>
+                            </div>
+                        `;
+                    } else if (data.tier === 'High') {
+                        evalStatusCard = `
+                            <div class="p-4 rounded-xl border border-orange-200 bg-orange-50/50 space-y-2.5 text-xs text-orange-950 font-medium">
+                                <div class="flex justify-between items-center">
+                                    <span>Model Classification:</span>
+                                    <span class="font-mono font-bold bg-orange-100 border border-orange-200 px-2.5 py-0.5 rounded text-orange-800">HIGH ANOMALY CASE</span>
+                                </div>
+                                <p class="text-[11px] text-orange-700 leading-relaxed font-sans">
+                                    This account's score indicates anomalous deviations. System recommends manual analyst investigation check.
+                                </p>
+                            </div>
+                        `;
+                    } else {
+                        evalStatusCard = `
+                            <div class="p-4 rounded-xl border border-emerald-200 bg-emerald-50/50 space-y-2.5 text-xs text-emerald-950 font-medium">
+                                <div class="flex justify-between items-center">
+                                    <span>Model Classification:</span>
+                                    <span class="font-mono font-bold bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded text-emerald-800">CLEARED PROFILE</span>
+                                </div>
+                                <p class="text-[11px] text-emerald-700 leading-relaxed font-sans">
+                                    This account's behavioral telemetry maps to baseline standard profiles. No action triggered.
+                                </p>
+                            </div>
+                        `;
+                    }
+
+                    display.innerHTML = `
+                        <div class="space-y-6 my-auto p-6">
+                            <div class="text-center space-y-1.5">
+                                <span class="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Classification Inference Result</span>
+                                <h3 class="text-5xl font-black font-mono tracking-tight ${data.tier === 'Critical' ? 'text-red-600' : (data.tier === 'High' ? 'text-orange-600' : 'text-blue-600')}">${data.risk_score.toFixed(4)}</h3>
+                                <span class="inline-block pt-1">${getBadgeHTML(data.tier)}</span>
+                            </div>
+                            
+                            ${evalStatusCard}
+
+                            <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1 font-mono text-[11px]">
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Operating Boundary:</span>
+                                    <strong class="text-slate-900">0.9899</strong>
+                                </div>
+                                <div class="flex justify-between text-slate-500">
+                                    <span>Action Directive:</span>
+                                    <strong class="text-slate-900">${data.action}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } catch (err) {
+                    console.error("Predict error:", err);
+                    display.innerHTML = `<div class="text-center my-auto text-xs text-red-600"><i class="fa-solid fa-triangle-exclamation"></i> Backend server inference returned an error.</div>`;
+                }
+            }, 600);
+        }
+
+        // -------------------------------------------------------------
+        // REGULATORY TABLE HANDLER
+        // -------------------------------------------------------------
+        function renderRegulatoryTable() {
+            const tbody = document.getElementById('regulatory-tbody');
+            if (!tbody) return;
+
+            const search = document.getElementById('regulatory-search-input').value.toLowerCase();
+            const criticals = allCases.filter(c => c.tier === 'Critical' && (search === '' || c.account_id.toString().includes(search)));
+
+            tbody.innerHTML = criticals.map(c => `
+                <tr class="hover:bg-slate-50 font-mono">
+                    <td class="px-4 py-3 font-bold text-slate-900">#${c.account_id}</td>
+                    <td class="px-4 py-3">${getBadgeHTML(c.tier)}</td>
+                    <td class="px-4 py-3 text-red-600 font-extrabold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> ${c.regulatory_flags.i4c_db}</td>
+                    <td class="px-4 py-3 text-red-600 font-extrabold"><span class="w-1.5 h-1.5 rounded-full bg-red-600 inline-block mr-1"></span> ${c.regulatory_flags.rbi_caution_list}</td>
+                    <td class="px-4 py-3 font-sans text-slate-700">${c.action}</td>
+                </tr>
+            `).join('');
+        }
+
+        // -------------------------------------------------------------
+        // NETWORK TOPOLOGY GRAPH HANDLER (VIS NETWORK)
+        // -------------------------------------------------------------
+        function initMuleNetworkGraph() {
+            const container = document.getElementById('vis-network-container');
+            if (!container || container.childElementCount > 0) return;
+
+            const nodes = new vis.DataSet([
+                { id: 1, label: 'Victim Account\n#1001\n(Origin)', color: { background: '#dbeafe', border: '#2563eb' }, shape: 'box', font: { color: '#1e3a8a', face: 'JetBrains Mono', size: 10 } },
+                { id: 2, label: 'Feeder Mule\n#9001\n(Pass-Through)', color: { background: '#fef3c7', border: '#d97706' }, shape: 'box', font: { color: '#78350f', face: 'JetBrains Mono', size: 10 } },
+                { id: 3, label: 'Mule Account\n#9003\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
+                { id: 4, label: 'Mule Account\n#9004\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
+                { id: 5, label: 'Mule Account\n#9006\n[CRITICAL]', color: { background: '#fee2e2', border: '#dc2626' }, shape: 'box', font: { color: '#991b1b', face: 'JetBrains Mono', size: 11, bold: true } },
+                { id: 6, label: 'Hub Aggregator\n#9099\n(Cash-Out Hub)', color: { background: '#fcf0f2', border: '#991b1b' }, shape: 'box', font: { color: '#7f1d1d', face: 'JetBrains Mono', size: 11, bold: true } },
+                { id: 7, label: 'ATM Cash-Out\n#ATM-402', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 9 } },
+                { id: 8, label: 'Crypto Off-Ramp\n#P2P-EXCHANGE', color: { background: '#f1f5f9', border: '#475569' }, shape: 'ellipse', font: { color: '#334155', face: 'JetBrains Mono', size: 9 } }
+            ]);
+
+            const edges = new vis.DataSet([
+                { from: 1, to: 2, label: '₹600k UPI (1 min)', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#2563eb' } },
+                { from: 2, to: 3, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
+                { from: 2, to: 4, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
+                { from: 2, to: 5, label: '₹200k IMPS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#d97706' } },
+                { from: 3, to: 6, label: '₹195k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 4, to: 6, label: '₹198k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 5, to: 6, label: '₹196k RTGS', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#dc2626' } },
+                { from: 6, to: 7, label: '₹350k Cash', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#991b1b' } },
+                { from: 6, to: 8, label: '₹239k USDT', arrows: 'to', font: { size: 8, align: 'top' }, color: { color: '#991b1b' } }
+            ]);
+
+            const data = { nodes: nodes, edges: edges };
+            const options = {
+                physics: { enabled: true, solver: 'forceAtlas2Based' },
+                interaction: { hover: true, dragNodes: true }
+            };
+            new vis.Network(container, data, options);
+        }
+
+        function resetMuleNetworkGraph() {
+            const container = document.getElementById('vis-network-container');
+            if (container) {
+                container.innerHTML = '';
+                initMuleNetworkGraph();
+            }
+        }
+
+        // -------------------------------------------------------------
+        // AUDIT LOGS TRAIL HANDLER
+        // -------------------------------------------------------------
+        async function fetchAuditLogs() {
+            const tbody = document.getElementById('audit-logs-tbody');
+            if (!tbody) return;
+            tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">Loading audit logs from server...</td></tr>`;
+
+            try {
+                const res = await fetch('/api/audit-logs');
+                const data = await res.json();
+                const logs = data.audit_logs || [];
+                logs.reverse(); // Show latest first
+                
+                tbody.innerHTML = logs.map(l => `
+                    <tr>
+                        <td class="px-4 py-2.5 text-slate-500 font-mono text-[11px]">${l.timestamp}</td>
+                        <td class="px-4 py-2.5 font-bold text-slate-800">${l.actor}</td>
+                        <td class="px-4 py-2.5 font-semibold text-blue-900">${l.action}</td>
+                        <td class="px-4 py-2.5 font-bold font-mono text-slate-700">${l.case_id}</td>
+                        <td class="px-4 py-2.5 font-bold text-emerald-600">${l.status}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                console.error("Failed fetching audit logs:", err);
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-red-600">Failed to load logs. Server offline.</td></tr>`;
+            }
+        }
+
+        // Export CSV Helper
+        function exportCasesCSV() {
+            let csv = "Account_ID,Risk_Score,Tier,Action,Status,Assigned_Analyst,Created_At\n";
+            allCases.forEach(c => {
+                csv += `${c.account_id},${c.risk_score},${c.tier},"${c.action}","${c.status}","${c.assigned_analyst}","${c.created_at}"\n`;
+            });
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `MuleShield_Cases_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+        }
+
+        // Live Transaction Stream Simulator
+        const simulatedInflowChannels = ["UPI Inflow", "IMPS Deposit", "NEFT Credit", "RTGS Transfer"];
+        
+        function runLiveTransactionFeed() {
+            const feed = document.getElementById('live-transaction-feed');
+            if (!feed) return;
+            
+            if (liveFeedInterval) return; // Already running
+
+            // Generate initial mock transactions if empty
+            if (feed.childElementCount === 0) {
+                for (let i = 0; i < 4; i++) {
+                    feed.appendChild(createMockTransactionElement());
+                }
+            }
+
+            liveFeedInterval = setInterval(() => {
+                const newTx = createMockTransactionElement();
+                feed.insertBefore(newTx, feed.firstChild);
+                
+                if (feed.childElementCount > 6) {
+                    feed.lastChild.remove();
+                }
+            }, 4500);
+        }
+
+        function createMockTransactionElement() {
+            const txId = Math.floor(100000 + Math.random() * 900000);
+            const accId = Math.floor(9010 + Math.random() * 9000);
+            const isMule = Math.random() > 0.85;
+            const amount = isMule ? (150000 + Math.floor(Math.random() * 450000)) : (2000 + Math.floor(Math.random() * 25000));
+            const channel = isMule ? "UPI Inflow" : simulatedInflowChannels[Math.floor(Math.random() * simulatedInflowChannels.length)];
+            const timeStr = new Date().toLocaleTimeString();
+            
+            const div = document.createElement('div');
+            div.className = `p-2.5 rounded-xl border transition-all duration-300 ${isMule ? 'bg-red-50 border-red-200 text-red-950 font-bold' : 'bg-slate-50 border-slate-200 text-slate-700'}`;
+            
+            if (isMule) {
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-[9px] text-red-600 font-bold">
+                        <span>ALERT: SUSPICIOUS MULE VELOCITY</span>
+                        <span>${timeStr}</span>
+                    </div>
+                    <div class="mt-1 flex justify-between text-xs">
+                        <span>Tx #${txId} | Acc #${accId}</span>
+                        <span class="text-red-700 font-black">₹${amount.toLocaleString()}</span>
+                    </div>
+                    <div class="mt-0.5 flex justify-between text-[9px] text-red-800 font-medium">
+                        <span>Reason: Outflow Spread Exceeded</span>
+                        <span>Risk Score: ${(0.9901 + Math.random()*0.009).toFixed(4)}</span>
+                    </div>
+                `;
+            } else {
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-[9px] text-slate-400">
+                        <span>TX PROCESSED (${channel})</span>
+                        <span>${timeStr}</span>
+                    </div>
+                    <div class="mt-1 flex justify-between text-xs">
+                        <span>Tx #${txId} | Acc #${accId}</span>
+                        <span class="text-slate-900 font-bold">₹${amount.toLocaleString()}</span>
+                    </div>
+                `;
+            }
+            return div;
+        }
+
+        window.onload = checkAuthentication;
+    </script>
+</body>
+</html>
