@@ -28,5 +28,5 @@ backend/storage/*.txt
 backend/storage/*.pdf
 backend/storage/*.json
 
-# Scratch outputs
-scratch/oof_predictions.csv
+# Scratch folder (developer workspace)
+scratch/
