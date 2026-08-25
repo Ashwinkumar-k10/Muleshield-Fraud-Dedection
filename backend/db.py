@@ -174,6 +174,58 @@ class MuleDatabase:
                         TransactionRepository.create(db, src, dst, amt, tx_type)
                 print("Seeding transaction relationships completed.")
             
+            # 5. Seed V1 BASELINE Model Registry entry
+            from backend.database.models import ModelRegistry, ModelAudit
+            model_count = db.query(ModelRegistry).filter(ModelRegistry.version == "V1 BASELINE").count()
+            if model_count == 0:
+                print("Seeding V1 BASELINE model registry entry...")
+                v1_baseline = ModelRegistry(
+                    version="V1 BASELINE",
+                    model_artifact_path="modeling/mule_shield_model.json",
+                    preprocessor_path="modeling/preprocessor.pkl",
+                    feature_schema_path="modeling/feature_schema.json",
+                    dataset_version="data_copy.csv",
+                    metrics=json.dumps({
+                        "precision": 1.0000,
+                        "recall": 0.6164,
+                        "f1": 0.7586,
+                        "pr_auc": 0.8807
+                    }),
+                    threshold=0.9899,
+                    training_config=json.dumps({
+                        "decision_boundary_type": "high_precision",
+                        "xgboost_params": {
+                            "max_depth": 6,
+                            "eta": 0.3,
+                            "objective": "binary:logistic"
+                        }
+                    }),
+                    validation_status="PASSED",
+                    approval_status="PRODUCTION"
+                )
+                db.add(v1_baseline)
+                db.commit()
+                
+                # Log initial audit
+                audit = ModelAudit(
+                    version="V1 BASELINE",
+                    action="DEPLOY_PRODUCTION",
+                    performed_by="system@muleshield.psb",
+                    details=json.dumps({
+                        "note": "Initial production seeding of stable baseline model.",
+                        "metrics": {
+                            "precision": 1.0000,
+                            "recall": 0.6164,
+                            "f1": 0.7586,
+                            "pr_auc": 0.8807
+                        },
+                        "threshold": 0.9899
+                    })
+                )
+                db.add(audit)
+                db.commit()
+                print("Seeding V1 BASELINE model registry completed.")
+            
             print("Database seeding completed successfully.")
         except Exception as e:
             db.rollback()

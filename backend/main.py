@@ -467,6 +467,210 @@ def predict_raw_account():
             "detail": "The dedicated machine learning inference server could not be reached. Please check service status."
         }), 503
 
+@app.route("/api/model-registry", methods=["GET", "POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
+def model_registry_list():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry
+    
+    db_session = SessionLocal()
+    try:
+        if request.method == "GET":
+            models = db_session.query(ModelRegistry).order_by(ModelRegistry.created_at.desc()).all()
+            result = []
+            for m in models:
+                result.append({
+                    "id": m.id,
+                    "version": m.version,
+                    "model_artifact_path": m.model_artifact_path,
+                    "preprocessor_path": m.preprocessor_path,
+                    "feature_schema_path": m.feature_schema_path,
+                    "dataset_version": m.dataset_version,
+                    "metrics": json.loads(m.metrics) if m.metrics else {},
+                    "threshold": m.threshold,
+                    "training_config": json.loads(m.training_config) if m.training_config else {},
+                    "validation_status": m.validation_status,
+                    "approval_status": m.approval_status,
+                    "created_at": m.created_at.isoformat()
+                })
+            return jsonify({"models": result})
+            
+        if request.user.get("role") not in ["ADMIN", "ANALYST"]:
+            return jsonify({"error": "Unauthorized"}), 403
+            
+        data = request.json or {}
+        version = data.get("version")
+        if not version:
+            return jsonify({"error": "Version identifier is required"}), 400
+            
+        existing = db_session.query(ModelRegistry).filter(ModelRegistry.version == version).first()
+        if existing:
+            return jsonify({"error": f"Model version '{version}' already registered"}), 400
+            
+        new_model = ModelRegistry(
+            version=version,
+            model_artifact_path=data.get("model_artifact_path", "modeling/mule_shield_model.json"),
+            preprocessor_path=data.get("preprocessor_path", "modeling/preprocessor.pkl"),
+            feature_schema_path=data.get("feature_schema_path", "modeling/feature_schema.json"),
+            dataset_version=data.get("dataset_version", "data_copy.csv"),
+            metrics=json.dumps(data.get("metrics", {})),
+            threshold=data.get("threshold", 0.9899),
+            training_config=json.dumps(data.get("training_config", {})),
+            validation_status=data.get("validation_status", "EXPERIMENTAL"),
+            approval_status=data.get("approval_status", "EXPERIMENTAL")
+        )
+        db_session.add(new_model)
+        db_session.commit()
+        
+        from backend.database.models import ModelAudit
+        audit = ModelAudit(
+            version=version,
+            action="REGISTER",
+            performed_by=request.user.get("email"),
+            details=json.dumps({
+                "note": f"Model version {version} registered via registry API.",
+                "metrics": data.get("metrics", {}),
+                "threshold": data.get("threshold", 0.9899)
+            })
+        )
+        db_session.add(audit)
+        db_session.commit()
+        
+        return jsonify({"message": f"Model version {version} successfully registered."}), 201
+    finally:
+        db_session.close()
+
+@app.route("/api/model-registry/<version>/approve", methods=["POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN")
+def model_registry_approve(version):
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry, ModelAudit
+    
+    db_session = SessionLocal()
+    try:
+        model = db_session.query(ModelRegistry).filter(ModelRegistry.version == version).first()
+        if not model:
+            return jsonify({"error": "Model version not found"}), 404
+            
+        data = request.json or {}
+        new_state = data.get("status")
+        
+        if new_state not in ["APPROVED", "PRODUCTION", "RETIRED", "VALIDATED"]:
+            return jsonify({"error": f"Invalid model state: {new_state}"}), 400
+            
+        if new_state == "PRODUCTION" and model.approval_status != "APPROVED" and model.version != "V1 BASELINE":
+            return jsonify({"error": "Promotion block: Only APPROVED models can be deployed to PRODUCTION."}), 400
+
+        old_state = model.approval_status
+        model.approval_status = new_state
+        db_session.commit()
+        
+        audit = ModelAudit(
+            version=version,
+            action=f"TRANSITION_TO_{new_state}",
+            performed_by=request.user.get("email"),
+            details=json.dumps({
+                "old_state": old_state,
+                "new_state": new_state,
+                "metrics": json.loads(model.metrics) if model.metrics else {},
+                "dataset": model.dataset_version,
+                "threshold": model.threshold
+            })
+        )
+        db_session.add(audit)
+        db_session.commit()
+        
+        return jsonify({
+            "message": f"Model version '{version}' successfully transition from '{old_state}' to '{new_state}'.",
+            "version": version,
+            "new_status": new_state
+        })
+    finally:
+        db_session.close()
+
+@app.route("/api/model-registry/compare", methods=["GET", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
+def model_registry_compare():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    candidate_version = request.args.get("candidate")
+    if not candidate_version:
+        return jsonify({"error": "Missing 'candidate' version query parameter"}), 400
+        
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry
+    
+    db_session = SessionLocal()
+    try:
+        prod_model = db_session.query(ModelRegistry).filter(ModelRegistry.approval_status == "PRODUCTION").first()
+        cand_model = db_session.query(ModelRegistry).filter(ModelRegistry.version == candidate_version).first()
+        
+        if not cand_model:
+            return jsonify({"error": f"Candidate model '{candidate_version}' not found"}), 404
+            
+        prod_data = None
+        if prod_model:
+            prod_data = {
+                "version": prod_model.version,
+                "metrics": json.loads(prod_model.metrics) if prod_model.metrics else {},
+                "threshold": prod_model.threshold,
+                "dataset_version": prod_model.dataset_version,
+                "created_at": prod_model.created_at.isoformat()
+            }
+            
+        cand_data = {
+            "version": cand_model.version,
+            "metrics": json.loads(cand_model.metrics) if cand_model.metrics else {},
+            "threshold": cand_model.threshold,
+            "dataset_version": cand_model.dataset_version,
+            "created_at": cand_model.created_at.isoformat(),
+            "approval_status": cand_model.approval_status
+        }
+        
+        return jsonify({
+            "production": prod_data,
+            "candidate": cand_data
+        })
+    finally:
+        db_session.close()
+
+@app.route("/api/model-registry/audits", methods=["GET", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
+def model_registry_audits():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelAudit
+    
+    db_session = SessionLocal()
+    try:
+        audits = db_session.query(ModelAudit).order_by(ModelAudit.timestamp.desc()).all()
+        result = []
+        for a in audits:
+            result.append({
+                "id": a.id,
+                "version": a.version,
+                "action": a.action,
+                "performed_by": a.performed_by,
+                "timestamp": a.timestamp.isoformat(),
+                "details": json.loads(a.details) if a.details else {}
+            })
+        return jsonify({"audits": result})
+    finally:
+        db_session.close()
+
 @app.route("/api/model/metadata", methods=["GET", "OPTIONS"])
 @require_auth
 @require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")

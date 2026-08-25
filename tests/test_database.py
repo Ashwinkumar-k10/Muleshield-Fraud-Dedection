@@ -129,15 +129,16 @@ class TestMuleShieldDatabase(unittest.TestCase):
         AccountRepository.create(self.db, account_id=account_id, attributes={})
 
         transaction = Transaction(
-            account_id=account_id,
+            source_account_id=account_id,
+            destination_account_id=9002,
             amount=50000.0,
-            transaction_type="UPI_INFLOW",
+            transaction_type="UPI",
             timestamp=datetime.utcnow()
         )
         self.db.add(transaction)
         self.db.commit()
 
-        db_tx = self.db.query(Transaction).filter(Transaction.account_id == account_id).first()
+        db_tx = self.db.query(Transaction).filter(Transaction.source_account_id == account_id).first()
         self.assertIsNotNone(db_tx)
         self.assertEqual(db_tx.amount, 50000.0)
 

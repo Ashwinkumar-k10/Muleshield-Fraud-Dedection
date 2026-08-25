@@ -109,3 +109,29 @@ class Report(Base):
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     filepath = Column(String, nullable=True)
+
+class ModelRegistry(Base):
+    __tablename__ = "model_registry"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    version = Column(String, unique=True, nullable=False)
+    model_artifact_path = Column(String, nullable=False)
+    preprocessor_path = Column(String, nullable=False)
+    feature_schema_path = Column(String, nullable=False)
+    dataset_version = Column(String, nullable=False)
+    metrics = Column(Text, nullable=False)
+    threshold = Column(Float, nullable=False)
+    training_config = Column(Text, nullable=False)
+    validation_status = Column(String, nullable=False)
+    approval_status = Column(String, nullable=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class ModelAudit(Base):
+    __tablename__ = "model_audits"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    version = Column(String, ForeignKey("model_registry.version"), nullable=False)
+    action = Column(String, nullable=False)
+    performed_by = Column(String, nullable=False)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    details = Column(Text, nullable=True)
