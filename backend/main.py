@@ -695,6 +695,101 @@ def model_registry_audits():
     finally:
         db_session.close()
 
+@app.route("/api/model-registry/retrain", methods=["POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST")
+def model_registry_retrain():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    version_name = data.get("version_name")
+    hyperparams = data.get("hyperparameters", {})
+    performed_by = request.user.get("email")
+    
+    from modeling.retrain_pipeline import RetrainingPipeline
+    pipeline = RetrainingPipeline()
+    try:
+        result = pipeline.run_pipeline(
+            version_name=version_name,
+            hyperparameters=hyperparams,
+            performed_by=performed_by
+        )
+        return jsonify({
+            "message": f"Retraining pipeline completed successfully for '{result['version']}'. Candidate status: {result['approval_status']}.",
+            "candidate": result
+        }), 201
+    except Exception as e:
+        return jsonify({"error": "Retraining pipeline failed", "detail": str(e)}), 500
+
+@app.route("/api/model-registry/rollback", methods=["POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN")
+def model_registry_rollback():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    target_version = data.get("target_version")
+    
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry, ModelAudit
+    
+    db_session = SessionLocal()
+    try:
+        # Find current active PRODUCTION model (most recent)
+        current_prod = db_session.query(ModelRegistry).filter(ModelRegistry.approval_status == "PRODUCTION").order_by(ModelRegistry.created_at.desc()).first()
+        
+        if target_version:
+            target_model = db_session.query(ModelRegistry).filter(ModelRegistry.version == target_version).first()
+        else:
+            # Fallback to V1 BASELINE or latest APPROVED model
+            target_model = db_session.query(ModelRegistry).filter(
+                ModelRegistry.approval_status.in_(["APPROVED", "VALIDATED"]),
+                ModelRegistry.version != (current_prod.version if current_prod else "")
+            ).order_by(ModelRegistry.created_at.desc()).first()
+            
+            if not target_model:
+                target_model = db_session.query(ModelRegistry).filter(ModelRegistry.version == "V1 BASELINE").first()
+
+        if not target_model:
+            return jsonify({"error": "No valid model version found to rollback to."}), 404
+
+        old_prod_version = current_prod.version if current_prod else "N/A"
+        
+        # Demote current production model to APPROVED
+        if current_prod:
+            current_prod.approval_status = "APPROVED"
+            
+        # Promote target version to PRODUCTION
+        target_model.approval_status = "PRODUCTION"
+        db_session.commit()
+        
+        # Log Audit Trail for Rollback
+        audit = ModelAudit(
+            version=target_model.version,
+            action="ROLLBACK",
+            performed_by=request.user.get("email"),
+            details=json.dumps({
+                "note": f"Production deployment rolled back from '{old_prod_version}' to '{target_model.version}'.",
+                "old_production": old_prod_version,
+                "new_production": target_model.version,
+                "metrics": json.loads(target_model.metrics) if target_model.metrics else {},
+                "threshold": target_model.threshold,
+                "dataset": target_model.dataset_version
+            })
+        )
+        db_session.add(audit)
+        db_session.commit()
+        
+        return jsonify({
+            "message": f"Successfully rolled back production model from '{old_prod_version}' to '{target_model.version}'.",
+            "active_production": target_model.version,
+            "rolled_back_from": old_prod_version
+        })
+    finally:
+        db_session.close()
+
 @app.route("/api/model/metadata", methods=["GET", "OPTIONS"])
 @require_auth
 @require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
