@@ -989,6 +989,10 @@ def admin_users():
     finally:
         db_session.close()
 
+@app.route("/<path:path>", methods=["GET"])
+def serve_static(path):
+    return send_from_directory(FRONTEND_DIR, path)
+
 if __name__ == "__main__":
     print("Starting MuleShield Backend API on http://localhost:8000 ...")
     app.run(host="0.0.0.0", port=8000, debug=False)
