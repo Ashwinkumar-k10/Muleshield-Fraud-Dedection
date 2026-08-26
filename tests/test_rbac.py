@@ -24,8 +24,8 @@ class TestRBACAndAuth(unittest.TestCase):
         self.db.commit()
         
         # Create test users
-        import hashlib
-        pwd_hash = hashlib.sha256("password123".encode()).hexdigest()
+        from werkzeug.security import generate_password_hash
+        pwd_hash = generate_password_hash("password123")
         
         self.test_admin = User(email="test_admin@muleshield.psb", password_hash=pwd_hash, role="ADMIN")
         self.test_analyst = User(email="test_analyst@muleshield.psb", password_hash=pwd_hash, role="ANALYST")
@@ -62,6 +62,48 @@ class TestRBACAndAuth(unittest.TestCase):
         self.assertEqual(res.status_code, 401)
         data = res.get_json()
         self.assertIn("error", data)
+
+    def test_signup_role_restriction(self):
+        # Admin role signup should be rejected
+        payload = {
+            "email": "test_fake_admin@muleshield.psb",
+            "password": "password123",
+            "role": "ADMIN"
+        }
+        res = self.client.post("/api/auth/signup", json=payload)
+        self.assertEqual(res.status_code, 400)
+        self.assertIn("Self-registration is only allowed", res.get_json()["error"])
+
+        # Analyst role signup should succeed
+        payload = {
+            "email": "test_new_analyst@muleshield.psb",
+            "password": "password123",
+            "role": "ANALYST"
+        }
+        res = self.client.post("/api/auth/signup", json=payload)
+        self.assertEqual(res.status_code, 200)
+
+    def test_auth_rate_limiting(self):
+        from backend.main import auth_limiter
+        auth_limiter.requests = {} # reset
+        
+        payload = {
+            "email": "test_analyst@muleshield.psb",
+            "password": "wrongpassword"
+        }
+        
+        # Hit login endpoint 10 times
+        for _ in range(10):
+            res = self.client.post("/api/auth/login", json=payload)
+            self.assertEqual(res.status_code, 401)
+            
+        # The 11th request should be blocked by rate limiting
+        res = self.client.post("/api/auth/login", json=payload)
+        self.assertEqual(res.status_code, 429)
+        self.assertIn("Too many requests", res.get_json()["error"])
+        
+        # Reset limiter for subsequent tests
+        auth_limiter.requests = {}
 
     def test_logout(self):
         token = create_token("test_analyst@muleshield.psb", "ANALYST")

@@ -30,3 +30,6 @@ backend/storage/*.json
 
 # Scratch folder (developer workspace)
 scratch/
+
+# Retraining artifacts
+modeling/artifacts/

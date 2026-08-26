@@ -1,19 +1,122 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
     image: postgres:15-alpine
     container_name: muleshield_postgres
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: muleshield
-      POSTGRES_PASSWORD: muleshield_secure
-      POSTGRES_DB: muleshield_db
+      POSTGRES_USER: ${POSTGRES_USER:-muleshield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-muleshield_db}
     ports:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-muleshield} -d ${POSTGRES_DB:-muleshield_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - muleshield_net
+
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: muleshield_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://muleshield:${POSTGRES_PASSWORD:-muleshield_secure}@postgres:5432/muleshield_db}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:-change-me-in-production}
+      ML_SERVICE_URL: http://ml-service:8080
+      GRAPH_SERVICE_URL: http://graph-service:8081
+      REPORTING_SERVICE_URL: http://reporting-service:8082
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ml-service:
+        condition: service_healthy
+      graph-service:
+        condition: service_healthy
+      reporting-service:
+        condition: service_healthy
+    volumes:
+      - ./modeling:/app/modeling:ro
+      - ./data:/app/data:ro
+    networks:
+      - muleshield_net
+
+  ml-service:
+    build:
+      context: ./backend
+      dockerfile: services/ml_service/Dockerfile
+    container_name: muleshield_ml_service
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - ./modeling:/app/modeling:ro
+    networks:
+      - muleshield_net
+
+  graph-service:
+    build:
+      context: ./backend
+      dockerfile: services/graph_service/Dockerfile
+    container_name: muleshield_graph_service
+    restart: unless-stopped
+    ports:
+      - "8081:8081"
+    environment:
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - muleshield_net
+
+  reporting-service:
+    build:
+      context: ./backend
+      dockerfile: services/reporting_service/Dockerfile
+    container_name: muleshield_reporting_service
+    restart: unless-stopped
+    ports:
+      - "8082:8082"
+    environment:
+      FLASK_ENV: production
+      PYTHONUNBUFFERED: "1"
+    networks:
+      - muleshield_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: muleshield_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:8000}
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - muleshield_net
 
 volumes:
   pgdata:
     driver: local
+
+networks:
+  muleshield_net:
+    driver: bridge

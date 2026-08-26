@@ -11,18 +11,38 @@ import hmac
 import hashlib
 from datetime import datetime
 import numpy as np
+import requests
 
 sys.path.append('.')
+from backend.config import Config
 from backend.db import db
 from backend.report_generator import generate_pdf_report
 
 app = Flask(__name__)
-CORS(app)
+
+# Security Hardening: CORS origin controls
+cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if cors_origins:
+    allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+else:
+    allowed_origins = ["http://localhost:3000"]
+
+if Config.FLASK_ENV == "production":
+    CORS(app, origins=allowed_origins, supports_credentials=True)
+    # Warn/Prevent weak JWT secret keys in production
+    if b"muleshield-secure-secret-2026-xyz" in Config.JWT_SECRET_KEY:
+        print("WARNING [SECURITY]: Default JWT_SECRET_KEY is being used in production! Please set a unique JWT_SECRET_KEY in your environment variables.", file=sys.stderr)
+else:
+    CORS(app)  # Allow wide open access for local development ease
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 
-# Environment-backed secret key
-JWT_SECRET_KEY = os.environ.get("JWT_SECRET_KEY", "muleshield-secure-secret-2026-xyz").encode()
+# Configuration
+JWT_SECRET_KEY = Config.JWT_SECRET_KEY
+ML_SERVICE_URL = Config.ML_SERVICE_URL
+GRAPH_SERVICE_URL = Config.GRAPH_SERVICE_URL
+REPORTING_SERVICE_URL = Config.REPORTING_SERVICE_URL
+SERVICE_TIMEOUT = Config.SERVICE_TIMEOUT
 
 # JWT Token Helpers
 def create_token(email, role):
@@ -58,6 +78,37 @@ def decode_token(token):
         return payload
     except Exception:
         return None
+
+# Security Hardening: In-Memory Rate Limiting for sensitive Auth endpoints
+class RateLimiter:
+    def __init__(self, limit=10, period=60):
+        self.limit = limit
+        self.period = period
+        self.requests = {}
+
+    def is_allowed(self, key):
+        now = time.time()
+        if key not in self.requests:
+            self.requests[key] = []
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.period]
+        if len(self.requests[key]) >= self.limit:
+            return False
+        self.requests[key].append(now)
+        return True
+
+auth_limiter = RateLimiter(limit=10, period=60)
+
+def rate_limit_auth(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return f(*args, **kwargs)
+        ip = request.remote_addr or "127.0.0.1"
+        if not auth_limiter.is_allowed(ip):
+            db.log_audit_event("Rate Limit Exceeded", "N/A", f"BLOCKED: IP {ip}", "Guest")
+            return jsonify({"error": "Too many requests. Please try again later."}), 429
+        return f(*args, **kwargs)
+    return decorated
 
 # Middleware Decorators
 def require_auth(f):
@@ -107,7 +158,18 @@ def require_roles(*allowed_roles):
 def read_root():
     return send_from_directory(FRONTEND_DIR, "index.html")
 
+@app.route("/health", methods=["GET"])
+def gateway_health():
+    return jsonify({
+        "service": "api-gateway",
+        "status": "UP",
+        "ml_service": ML_SERVICE_URL,
+        "graph_service": GRAPH_SERVICE_URL or "in-process",
+        "reporting_service": REPORTING_SERVICE_URL or "in-process"
+    }), 200
+
 @app.route("/api/auth/signup", methods=["POST", "OPTIONS"])
+@rate_limit_auth
 def auth_signup():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight successful"}), 200
@@ -115,13 +177,17 @@ def auth_signup():
     data = request.json or {}
     email = data.get("email")
     password = data.get("password")
-    role = data.get("role", "ANALYST")
+    role = data.get("role", "ANALYST").upper()
     
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
         
-    import hashlib
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    # Prevent Privilege Escalation
+    if role not in ["ANALYST", "VIEWER"]:
+        return jsonify({"error": "Self-registration is only allowed for ANALYST or VIEWER roles"}), 400
+        
+    from werkzeug.security import generate_password_hash
+    password_hash = generate_password_hash(password)
     
     from backend.database.connection import SessionLocal
     from backend.database.models import User
@@ -140,11 +206,15 @@ def auth_signup():
         return jsonify({"message": "User registered successfully", "email": email, "role": role})
     except Exception as e:
         db_session.rollback()
+        # Prevent stack trace leakage in production
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
         return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
 
 @app.route("/api/auth/login", methods=["POST", "OPTIONS"])
+@rate_limit_auth
 def auth_login():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight successful"}), 200
@@ -156,16 +226,14 @@ def auth_login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
         
-    import hashlib
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    
     from backend.database.connection import SessionLocal
     from backend.database.models import User
+    from werkzeug.security import check_password_hash
     
     db_session = SessionLocal()
     try:
-        user = db_session.query(User).filter(User.email == email, User.password_hash == password_hash).first()
-        if not user:
+        user = db_session.query(User).filter(User.email == email).first()
+        if not user or not check_password_hash(user.password_hash, password):
             db.log_audit_event("Login Failure", "N/A", "FAILED: Invalid credentials", email)
             return jsonify({"error": "Invalid Email/Employee ID or password"}), 401
             
@@ -178,6 +246,8 @@ def auth_login():
             "token": token
         })
     except Exception as e:
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
         return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
@@ -220,6 +290,7 @@ def get_case_graph(account_id: int):
         
     from backend.database.connection import SessionLocal
     from backend.database.repositories import TransactionRepository
+    from backend.database.models import Account
     from backend.graph_engine import MuleGraph
     
     db_session = SessionLocal()
@@ -236,34 +307,58 @@ def get_case_graph(account_id: int):
                 "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
                 "edges": []
             })
-            
-        graph = MuleGraph(txs)
         
-        if account_id not in graph.nodes:
-            from backend.database.models import Account
-            acc_exists = db_session.query(Account).filter(Account.account_id == account_id).first()
-            if not acc_exists:
-                return jsonify({"error": "Account not found"}), 404
-            return jsonify({
-                "metrics": {
-                    "account_id": account_id,
-                    "degree": 0, "fan_in": 0, "fan_out": 0,
-                    "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
-                    "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
-                },
-                "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
-                "edges": []
-            })
+        if GRAPH_SERVICE_URL:
+            tx_payload = []
+            for tx in txs:
+                tx_payload.append({
+                    "id": tx.id,
+                    "source_account_id": tx.source_account_id,
+                    "destination_account_id": tx.destination_account_id,
+                    "amount": tx.amount,
+                    "transaction_type": tx.transaction_type,
+                    "timestamp": tx.timestamp.strftime("%Y-%m-%d %H:%M:%S UTC")
+                })
+            try:
+                response = requests.post(
+                    f"{GRAPH_SERVICE_URL}/metrics",
+                    json={"account_id": account_id, "transactions": tx_payload},
+                    timeout=SERVICE_TIMEOUT
+                )
+                if response.status_code != 200:
+                    return jsonify({"error": "Graph service error", "detail": response.text}), response.status_code
+                data = response.json()
+                metrics = data["center_metrics"]
+                node_metrics = data.get("node_metrics", {})
+            except requests.exceptions.RequestException as e:
+                return jsonify({"error": "Graph Service Temporarily Unavailable", "detail": str(e)}), 503
+        else:
+            graph = MuleGraph(txs)
+            if account_id not in graph.nodes:
+                acc_exists = db_session.query(Account).filter(Account.account_id == account_id).first()
+                if not acc_exists:
+                    return jsonify({"error": "Account not found"}), 404
+                return jsonify({
+                    "metrics": {
+                        "account_id": account_id,
+                        "degree": 0, "fan_in": 0, "fan_out": 0,
+                        "total_volume": 0.0, "velocity": 0, "centrality": 0.0,
+                        "cycles": [], "paths": [], "cluster_nodes": [account_id], "signals": []
+                    },
+                    "nodes": [{"id": account_id, "label": f"Account #{account_id}", "color": {"background": "#3b82f6", "border": "#1d4ed8"}, "shape": "box"}],
+                    "edges": []
+                })
+            metrics = graph.compute_metrics(account_id)
+            node_metrics = {nid: graph.compute_metrics(nid) for nid in metrics["cluster_nodes"]}
             
-        metrics = graph.compute_metrics(account_id)
         cluster_nodes = metrics["cluster_nodes"]
         nodes_to_render = set(cluster_nodes)
         
         nodes_list = []
         for nid in nodes_to_render:
-            node_metrics = graph.compute_metrics(nid)
+            nm = node_metrics.get(nid, metrics)
             is_active = (nid == account_id)
-            has_risk = len(node_metrics["signals"]) > 0
+            has_risk = len(nm["signals"]) > 0
             
             bg_color = "#3b82f6" if is_active else ("#f59e0b" if has_risk else "#94a3b8")
             border_color = "#1d4ed8" if is_active else ("#d97706" if has_risk else "#475569")
@@ -271,7 +366,7 @@ def get_case_graph(account_id: int):
             
             nodes_list.append({
                 "id": nid,
-                "label": f"Account #{nid}\n(Vol: \u20b9{node_metrics['total_volume']/1000:.1f}k)",
+                "label": f"Account #{nid}\n(Vol: \u20b9{nm['total_volume']/1000:.1f}k)",
                 "color": {"background": bg_color, "border": border_color, "highlight": {"background": "#60a5fa", "border": "#1d4ed8"}},
                 "shape": "box",
                 "font": {"color": text_color, "face": "JetBrains Mono", "size": 11, "bold": is_active},
@@ -280,26 +375,43 @@ def get_case_graph(account_id: int):
             })
             
         edges_list = []
-        for e in graph.edges:
-            src = e["source"]
-            dst = e["destination"]
-            if src in nodes_to_render and dst in nodes_to_render:
-                in_cycle = any(src in cyc and dst in cyc for cyc in metrics["cycles"])
-                edge_color = "#ef4444" if in_cycle else "#64748b"
-                width = 2 if in_cycle else 1
-                
-                edges_list.append({
-                    "id": e["id"],
-                    "from": src,
-                    "to": dst,
-                    "label": f"\u20b9{e['amount']/1000:.1f}k",
-                    "arrows": "to",
-                    "color": {"color": edge_color, "highlight": "#ef4444"},
-                    "width": width,
-                    "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
-                    "title": f"Amount: \u20b9{e['amount']:,.2f}\nType: {e['type']}\nTime: {e['timestamp']}"
-                })
-                
+        if GRAPH_SERVICE_URL:
+            for tx in txs:
+                src = tx.source_account_id
+                dst = tx.destination_account_id
+                if src in nodes_to_render and dst in nodes_to_render:
+                    edges_list.append({
+                        "id": tx.id,
+                        "from": src,
+                        "to": dst,
+                        "label": f"\u20b9{tx.amount/1000:.1f}k",
+                        "arrows": "to",
+                        "color": {"color": "#64748b", "highlight": "#ef4444"},
+                        "width": 1,
+                        "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
+                        "title": f"Amount: \u20b9{tx.amount:,.2f}\nType: {tx.transaction_type}\nTime: {tx.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC')}"
+                    })
+        else:
+            for e in graph.edges:
+                src = e["source"]
+                dst = e["destination"]
+                if src in nodes_to_render and dst in nodes_to_render:
+                    in_cycle = any(src in cyc and dst in cyc for cyc in metrics["cycles"])
+                    edge_color = "#ef4444" if in_cycle else "#64748b"
+                    width = 2 if in_cycle else 1
+                    
+                    edges_list.append({
+                        "id": e["id"],
+                        "from": src,
+                        "to": dst,
+                        "label": f"\u20b9{e['amount']/1000:.1f}k",
+                        "arrows": "to",
+                        "color": {"color": edge_color, "highlight": "#ef4444"},
+                        "width": width,
+                        "font": {"size": 8, "color": "#0f172a", "face": "JetBrains Mono"},
+                        "title": f"Amount: \u20b9{e['amount']:,.2f}\nType: {e['type']}\nTime: {e['timestamp']}"
+                    })
+        
         return jsonify({
             "metrics": metrics,
             "nodes": nodes_list,
@@ -407,14 +519,33 @@ def download_pdf(account_id: int):
     if not case:
         return jsonify({"error": "Case not found"}), 404
     
-    pdf_bytes = generate_pdf_report(case)
     db.log_audit_event("Download PDF Report", account_id, "SUCCESS", request.user.get("email"))
-    return send_file(
-        io.BytesIO(pdf_bytes),
-        mimetype="application/pdf",
-        as_attachment=True,
-        download_name=f"MuleShield_Report_{account_id}.pdf"
-    )
+    
+    if REPORTING_SERVICE_URL:
+        try:
+            response = requests.post(
+                f"{REPORTING_SERVICE_URL}/reports/pdf",
+                json={"case_data": case},
+                timeout=SERVICE_TIMEOUT
+            )
+            if response.status_code == 200:
+                return send_file(
+                    io.BytesIO(response.content),
+                    mimetype="application/pdf",
+                    as_attachment=True,
+                    download_name=f"MuleShield_Report_{account_id}.pdf"
+                )
+            return jsonify({"error": "Reporting service error", "detail": response.text}), response.status_code
+        except requests.exceptions.RequestException as e:
+            return jsonify({"error": "Reporting Service Temporarily Unavailable", "detail": str(e)}), 503
+    else:
+        pdf_bytes = generate_pdf_report(case)
+        return send_file(
+            io.BytesIO(pdf_bytes),
+            mimetype="application/pdf",
+            as_attachment=True,
+            download_name=f"MuleShield_Report_{account_id}.pdf"
+        )
 
 @app.route("/api/sample-mule-payload", methods=["GET", "OPTIONS"])
 @require_auth
@@ -442,12 +573,12 @@ def predict_raw_account():
     import requests
     data = request.json or {}
     
-    ml_service_url = "http://localhost:8080/predict"
+    ml_service_url = f"{ML_SERVICE_URL}/predict"
     try:
         response = requests.post(ml_service_url, json={
             "account_features": data.get("account_features", {}),
             "explain": True
-        }, timeout=5.0)
+        }, timeout=SERVICE_TIMEOUT)
         
         if response.status_code == 200:
             result = response.json()
@@ -695,6 +826,101 @@ def model_registry_audits():
     finally:
         db_session.close()
 
+@app.route("/api/model-registry/retrain", methods=["POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN", "ANALYST")
+def model_registry_retrain():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    version_name = data.get("version_name")
+    hyperparams = data.get("hyperparameters", {})
+    performed_by = request.user.get("email")
+    
+    from modeling.retrain_pipeline import RetrainingPipeline
+    pipeline = RetrainingPipeline()
+    try:
+        result = pipeline.run_pipeline(
+            version_name=version_name,
+            hyperparameters=hyperparams,
+            performed_by=performed_by
+        )
+        return jsonify({
+            "message": f"Retraining pipeline completed successfully for '{result['version']}'. Candidate status: {result['approval_status']}.",
+            "candidate": result
+        }), 201
+    except Exception as e:
+        return jsonify({"error": "Retraining pipeline failed", "detail": str(e)}), 500
+
+@app.route("/api/model-registry/rollback", methods=["POST", "OPTIONS"])
+@require_auth
+@require_roles("ADMIN")
+def model_registry_rollback():
+    if request.method == "OPTIONS":
+        return jsonify({"message": "CORS preflight successful"}), 200
+        
+    data = request.json or {}
+    target_version = data.get("target_version")
+    
+    from backend.database.connection import SessionLocal
+    from backend.database.models import ModelRegistry, ModelAudit
+    
+    db_session = SessionLocal()
+    try:
+        # Find current active PRODUCTION model (most recent)
+        current_prod = db_session.query(ModelRegistry).filter(ModelRegistry.approval_status == "PRODUCTION").order_by(ModelRegistry.created_at.desc()).first()
+        
+        if target_version:
+            target_model = db_session.query(ModelRegistry).filter(ModelRegistry.version == target_version).first()
+        else:
+            # Fallback to V1 BASELINE or latest APPROVED model
+            target_model = db_session.query(ModelRegistry).filter(
+                ModelRegistry.approval_status.in_(["APPROVED", "VALIDATED"]),
+                ModelRegistry.version != (current_prod.version if current_prod else "")
+            ).order_by(ModelRegistry.created_at.desc()).first()
+            
+            if not target_model:
+                target_model = db_session.query(ModelRegistry).filter(ModelRegistry.version == "V1 BASELINE").first()
+
+        if not target_model:
+            return jsonify({"error": "No valid model version found to rollback to."}), 404
+
+        old_prod_version = current_prod.version if current_prod else "N/A"
+        
+        # Demote current production model to APPROVED
+        if current_prod:
+            current_prod.approval_status = "APPROVED"
+            
+        # Promote target version to PRODUCTION
+        target_model.approval_status = "PRODUCTION"
+        db_session.commit()
+        
+        # Log Audit Trail for Rollback
+        audit = ModelAudit(
+            version=target_model.version,
+            action="ROLLBACK",
+            performed_by=request.user.get("email"),
+            details=json.dumps({
+                "note": f"Production deployment rolled back from '{old_prod_version}' to '{target_model.version}'.",
+                "old_production": old_prod_version,
+                "new_production": target_model.version,
+                "metrics": json.loads(target_model.metrics) if target_model.metrics else {},
+                "threshold": target_model.threshold,
+                "dataset": target_model.dataset_version
+            })
+        )
+        db_session.add(audit)
+        db_session.commit()
+        
+        return jsonify({
+            "message": f"Successfully rolled back production model from '{old_prod_version}' to '{target_model.version}'.",
+            "active_production": target_model.version,
+            "rolled_back_from": old_prod_version
+        })
+    finally:
+        db_session.close()
+
 @app.route("/api/model/metadata", methods=["GET", "OPTIONS"])
 @require_auth
 @require_roles("ADMIN", "ANALYST", "INVESTIGATOR", "VIEWER")
@@ -738,13 +964,13 @@ def admin_users():
         data = request.json or {}
         email = data.get("email")
         password = data.get("password")
-        role = data.get("role", "ANALYST")
+        role = data.get("role", "ANALYST").upper()
         
         if not email or not password:
             return jsonify({"error": "Email and password are required"}), 400
             
-        import hashlib
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        from werkzeug.security import generate_password_hash
+        password_hash = generate_password_hash(password)
         
         existing_user = db_session.query(User).filter(User.email == email).first()
         if existing_user:
@@ -756,6 +982,10 @@ def admin_users():
         
         db.log_audit_event("Admin Action: Create User", "N/A", f"SUCCESS: Created user {email} ({role})", request.user.get("email"))
         return jsonify({"message": "User created successfully", "email": email, "role": role})
+    except Exception as e:
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
+        return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
 

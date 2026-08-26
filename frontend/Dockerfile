@@ -1,21 +1,20 @@
-# Production Dockerfile for SecureMaint Next.js 15 Frontend
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
 COPY package.json package-lock.json* ./
+
 RUN npm ci
 
 COPY . .
 
-# Set environment variable to skip linting & typechecking at build to speed up container assembly
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-# Runner stage
 FROM node:20-alpine AS runner
 
 WORKDIR /app
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
@@ -33,5 +32,8 @@ EXPOSE 3000
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD node -e "fetch('http://localhost:3000/').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))" || exit 1
 
 CMD ["npm", "start"]
