@@ -19,7 +19,21 @@ from backend.db import db
 from backend.report_generator import generate_pdf_report
 
 app = Flask(__name__)
-CORS(app)
+
+# Security Hardening: CORS origin controls
+cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if cors_origins:
+    allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+else:
+    allowed_origins = ["http://localhost:3000"]
+
+if Config.FLASK_ENV == "production":
+    CORS(app, origins=allowed_origins, supports_credentials=True)
+    # Warn/Prevent weak JWT secret keys in production
+    if b"muleshield-secure-secret-2026-xyz" in Config.JWT_SECRET_KEY:
+        print("WARNING [SECURITY]: Default JWT_SECRET_KEY is being used in production! Please set a unique JWT_SECRET_KEY in your environment variables.", file=sys.stderr)
+else:
+    CORS(app)  # Allow wide open access for local development ease
 
 FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
 
@@ -64,6 +78,37 @@ def decode_token(token):
         return payload
     except Exception:
         return None
+
+# Security Hardening: In-Memory Rate Limiting for sensitive Auth endpoints
+class RateLimiter:
+    def __init__(self, limit=10, period=60):
+        self.limit = limit
+        self.period = period
+        self.requests = {}
+
+    def is_allowed(self, key):
+        now = time.time()
+        if key not in self.requests:
+            self.requests[key] = []
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.period]
+        if len(self.requests[key]) >= self.limit:
+            return False
+        self.requests[key].append(now)
+        return True
+
+auth_limiter = RateLimiter(limit=10, period=60)
+
+def rate_limit_auth(f):
+    @functools.wraps(f)
+    def decorated(*args, **kwargs):
+        if request.method == "OPTIONS":
+            return f(*args, **kwargs)
+        ip = request.remote_addr or "127.0.0.1"
+        if not auth_limiter.is_allowed(ip):
+            db.log_audit_event("Rate Limit Exceeded", "N/A", f"BLOCKED: IP {ip}", "Guest")
+            return jsonify({"error": "Too many requests. Please try again later."}), 429
+        return f(*args, **kwargs)
+    return decorated
 
 # Middleware Decorators
 def require_auth(f):
@@ -124,6 +169,7 @@ def gateway_health():
     }), 200
 
 @app.route("/api/auth/signup", methods=["POST", "OPTIONS"])
+@rate_limit_auth
 def auth_signup():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight successful"}), 200
@@ -131,13 +177,17 @@ def auth_signup():
     data = request.json or {}
     email = data.get("email")
     password = data.get("password")
-    role = data.get("role", "ANALYST")
+    role = data.get("role", "ANALYST").upper()
     
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
         
-    import hashlib
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
+    # Prevent Privilege Escalation
+    if role not in ["ANALYST", "VIEWER"]:
+        return jsonify({"error": "Self-registration is only allowed for ANALYST or VIEWER roles"}), 400
+        
+    from werkzeug.security import generate_password_hash
+    password_hash = generate_password_hash(password)
     
     from backend.database.connection import SessionLocal
     from backend.database.models import User
@@ -156,11 +206,15 @@ def auth_signup():
         return jsonify({"message": "User registered successfully", "email": email, "role": role})
     except Exception as e:
         db_session.rollback()
+        # Prevent stack trace leakage in production
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
         return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
 
 @app.route("/api/auth/login", methods=["POST", "OPTIONS"])
+@rate_limit_auth
 def auth_login():
     if request.method == "OPTIONS":
         return jsonify({"message": "CORS preflight successful"}), 200
@@ -172,16 +226,14 @@ def auth_login():
     if not email or not password:
         return jsonify({"error": "Email and password are required"}), 400
         
-    import hashlib
-    password_hash = hashlib.sha256(password.encode()).hexdigest()
-    
     from backend.database.connection import SessionLocal
     from backend.database.models import User
+    from werkzeug.security import check_password_hash
     
     db_session = SessionLocal()
     try:
-        user = db_session.query(User).filter(User.email == email, User.password_hash == password_hash).first()
-        if not user:
+        user = db_session.query(User).filter(User.email == email).first()
+        if not user or not check_password_hash(user.password_hash, password):
             db.log_audit_event("Login Failure", "N/A", "FAILED: Invalid credentials", email)
             return jsonify({"error": "Invalid Email/Employee ID or password"}), 401
             
@@ -194,6 +246,8 @@ def auth_login():
             "token": token
         })
     except Exception as e:
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
         return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
@@ -910,13 +964,13 @@ def admin_users():
         data = request.json or {}
         email = data.get("email")
         password = data.get("password")
-        role = data.get("role", "ANALYST")
+        role = data.get("role", "ANALYST").upper()
         
         if not email or not password:
             return jsonify({"error": "Email and password are required"}), 400
             
-        import hashlib
-        password_hash = hashlib.sha256(password.encode()).hexdigest()
+        from werkzeug.security import generate_password_hash
+        password_hash = generate_password_hash(password)
         
         existing_user = db_session.query(User).filter(User.email == email).first()
         if existing_user:
@@ -928,6 +982,10 @@ def admin_users():
         
         db.log_audit_event("Admin Action: Create User", "N/A", f"SUCCESS: Created user {email} ({role})", request.user.get("email"))
         return jsonify({"message": "User created successfully", "email": email, "role": role})
+    except Exception as e:
+        if Config.FLASK_ENV == "production":
+            return jsonify({"error": "An internal database error occurred."}), 500
+        return jsonify({"error": str(e)}), 500
     finally:
         db_session.close()
 

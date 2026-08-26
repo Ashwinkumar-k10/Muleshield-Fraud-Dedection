@@ -10,7 +10,18 @@ from backend.config import Config
 from backend.graph_engine import MuleGraph
 
 app = Flask(__name__)
-CORS(app)
+
+# Security Hardening: CORS origin controls
+cors_origins = os.environ.get("CORS_ALLOWED_ORIGINS", "")
+if cors_origins:
+    allowed_origins = [origin.strip() for origin in cors_origins.split(",") if origin.strip()]
+else:
+    allowed_origins = ["http://localhost:3000"]
+
+if Config.FLASK_ENV == "production":
+    CORS(app, origins=allowed_origins, supports_credentials=True)
+else:
+    CORS(app)
 
 logger = logging.getLogger("graph-service")
 logger.setLevel(logging.INFO)
