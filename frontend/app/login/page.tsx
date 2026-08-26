@@ -197,8 +197,7 @@ export default function LoginPage() {
                 className="w-full bg-slate-900 border border-slate-700 text-white rounded-xl px-4 py-3 text-xs focus:outline-none focus:border-blue-500 font-semibold"
               >
                 <option value="ANALYST">Fraud Analyst (Default)</option>
-                <option value="MANAGER">Operations Manager</option>
-                <option value="AUDITOR">Compliance Auditor</option>
+                <option value="VIEWER">Compliance Viewer</option>
               </select>
             </div>
             <button
