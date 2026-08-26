@@ -1,0 +1,463 @@
+<!DOCTYPE html><html class="h-full" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Network Analysis - MuleShield PRO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@450&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#d5e3fd",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-container": "#0b1c30",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#75859d",
+                        "surface-dim": "#d8dadc",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#000000",
+                        "inverse-surface": "#2d3133",
+                        "primary-container": "#131b2e",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-secondary-container": "#57657b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "primary-fixed": "#dae2fd",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary": "#515f74",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#565e74",
+                        "surface-container-high": "#e6e8ea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table-row-height": "40px",
+                        "sidebar-width": "260px",
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["12px", { "lineHeight": "16px", "fontWeight": "450" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom styles for graph rendering fallback */
+        .node { transition: all 0.2s ease-in-out; }
+        .node:hover { stroke: #000; stroke-width: 2px; }
+        .node-source { fill: #0f172a; }
+        .node-layering { fill: #ffffff; stroke: #c6c6cd; stroke-width: 1.5px; }
+        .node-sink { fill: #ffdad6; stroke: #ba1a1a; stroke-width: 2.5px; }
+        .edge { stroke: #c6c6cd; stroke-width: 1px; stroke-dasharray: 4; animation: flow 20s linear infinite; }
+        .edge-high-risk { stroke: #ba1a1a; stroke-width: 1.5px; stroke-dasharray: none; }
+        @keyframes flow { to { stroke-dashoffset: -1000; } }
+    </style>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/standalone/umd/vis-network.min.js"></script>
+    </head>
+<body class="bg-background text-on-background h-full font-body-sm flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[260px] bg-primary-container border-r border-outline-variant flex flex-col py-gutter px-unit z-50">
+<div class="mb-8 px-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary text-sm" data-icon="shield" data-weight="fill">shield</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">MuleShield PRO</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container">Forensic Intelligence</p>
+</div>
+</div>
+<ul class="flex flex-col gap-1 flex-1 px-2">
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="dashboard.html">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-title-sm text-title-sm">Overview</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="live-transactions.html">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="font-title-sm text-title-sm">Transactions</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform" href="network.html">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="font-title-sm text-title-sm">Network Analysis</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="cases.html">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span class="font-title-sm text-title-sm">Case Management</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="risk-engine.html">
+<span class="material-symbols-outlined" data-icon="security_update_good">security_update_good</span>
+<span class="font-title-sm text-title-sm">Risk Engine</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2.5 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="reporting.html">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-title-sm text-title-sm">Reporting</span>
+</a>
+</li>
+
+</ul>
+<div class="mt-auto px-2 border-t border-on-primary-container/20 pt-4">
+<ul class="flex flex-col gap-1">
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors rounded-lg" href="settings.html">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-body-sm text-body-sm">Settings</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-4 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors rounded-lg" href="javascript:void(0)">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="font-body-sm text-body-sm">Support</span>
+</a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="ml-[260px] flex-1 flex flex-col h-full relative">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full h-[64px] px-container-margin bg-surface border-b border-outline-variant shadow-sm z-40 sticky top-0">
+
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Visualization Canvas (Glass & Steel) -->
+<main class="flex-1 relative flex">
+<!-- Graph Area -->
+<div class="flex-1 relative bg-surface-container-lowest overflow-hidden" id="graph-container">
+<!-- Grid background pattern -->
+<div class="absolute inset-0 pointer-events-none opacity-20" style="background-image: radial-gradient(#c6c6cd 1px, transparent 1px); background-size: 24px 24px;"></div>
+<!-- SVG Graph Mockup -->
+<svg class="absolute inset-0 cursor-grab active:cursor-grabbing" height="100%" width="100%" xmlns="http://www.w3.org/2000/svg">
+<!-- Edges -->
+<line class="edge" x1="400" x2="250" y1="300" y2="150"></line>
+<line class="edge" x1="400" x2="550" y1="300" y2="180"></line>
+<line class="edge-high-risk" x1="400" x2="350" y1="300" y2="450"></line>
+<line class="edge" x1="400" x2="550" y1="300" y2="420"></line>
+<line class="edge" x1="250" x2="150" y1="150" y2="80"></line>
+<line class="edge" x1="550" x2="680" y1="180" y2="100"></line>
+<line class="edge-high-risk" x1="350" x2="280" y1="450" y2="580"></line>
+<line class="edge" x1="550" x2="700" y1="420" y2="500"></line>
+<!-- Nodes -->
+<!-- Source Node -->
+<g class="cursor-pointer" transform="translate(400, 300)">
+<circle class="node node-source shadow-sm" r="32"></circle>
+<text class="material-symbols-outlined" fill="#ffffff" font-family="Inter" font-size="24" text-anchor="middle" y="4">person</text>
+<text class="bg-surface/80" fill="#191c1e" font-family="JetBrains Mono" font-size="12" font-weight="600" text-anchor="middle" y="50">SRC-8821</text>
+</g>
+<!-- Layering Nodes -->
+<g class="cursor-pointer" transform="translate(250, 150)">
+<circle class="node node-layering shadow-sm" r="24"></circle>
+<text class="material-symbols-outlined" fill="#45464d" font-family="Inter" font-size="18" text-anchor="middle" y="6">account_balance</text>
+</g>
+<g class="cursor-pointer" transform="translate(550, 180)">
+<circle class="node node-layering shadow-sm" r="24"></circle>
+<text class="material-symbols-outlined" fill="#45464d" font-family="Inter" font-size="18" text-anchor="middle" y="6">account_balance</text>
+</g>
+<g class="cursor-pointer" transform="translate(350, 450)">
+<circle class="node node-layering shadow-sm stroke-error" r="24"></circle>
+<text class="material-symbols-outlined" fill="#ba1a1a" font-family="Inter" font-size="18" text-anchor="middle" y="6">account_balance</text>
+</g>
+<g class="cursor-pointer" transform="translate(550, 420)">
+<circle class="node node-layering shadow-sm" r="24"></circle>
+<text class="material-symbols-outlined" fill="#45464d" font-family="Inter" font-size="18" text-anchor="middle" y="6">account_balance</text>
+</g>
+<!-- Sink Nodes -->
+<g class="cursor-pointer" transform="translate(150, 80)">
+<rect class="node node-sink shadow-sm" height="48" rx="8" width="48" x="-24" y="-24"></rect>
+<text class="material-symbols-outlined" fill="#ba1a1a" font-family="Inter" font-size="20" text-anchor="middle" y="6">logout</text>
+</g>
+<g class="cursor-pointer" transform="translate(680, 100)">
+<rect class="node node-sink shadow-sm" height="48" rx="8" width="48" x="-24" y="-24"></rect>
+<text class="material-symbols-outlined" fill="#ba1a1a" font-family="Inter" font-size="20" text-anchor="middle" y="6">logout</text>
+</g>
+<g class="cursor-pointer" transform="translate(280, 580)">
+<rect class="node node-sink shadow-sm" height="48" rx="8" width="48" x="-24" y="-24"></rect>
+<text class="material-symbols-outlined" fill="#ba1a1a" font-family="Inter" font-size="20" text-anchor="middle" y="6">logout</text>
+</g>
+<g class="cursor-pointer" transform="translate(700, 500)">
+<rect class="node node-sink shadow-sm" height="48" rx="8" width="48" x="-24" y="-24"></rect>
+<text class="material-symbols-outlined" fill="#ba1a1a" font-family="Inter" font-size="20" text-anchor="middle" y="6">logout</text>
+</g>
+</svg>
+<!-- Floating Controls -->
+<div class="absolute bottom-container-margin left-container-margin flex flex-col gap-2 bg-surface border border-outline-variant rounded-lg shadow-sm p-1">
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-md transition-colors" title="Zoom In">
+<span class="material-symbols-outlined text-sm" data-icon="add">add</span>
+</button>
+<div class="w-full h-px bg-outline-variant/50"></div>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-md transition-colors" title="Zoom Out">
+<span class="material-symbols-outlined text-sm" data-icon="remove">remove</span>
+</button>
+<div class="w-full h-px bg-outline-variant/50"></div>
+<button class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-md transition-colors" title="Reset View">
+<span class="material-symbols-outlined text-sm" data-icon="fit_screen">fit_screen</span>
+</button>
+</div>
+<!-- Legend -->
+<div class="absolute top-container-margin left-container-margin bg-surface/90 backdrop-blur-sm border border-outline-variant rounded-lg shadow-sm p-3">
+<div class="flex flex-col gap-2 font-label-caps text-label-caps text-on-surface-variant">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full bg-primary"></div> Source</div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-full border border-outline-variant bg-surface-container-lowest"></div> Layering</div>
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm border-2 border-error bg-error-container"></div> Sink (Cash-out)</div>
+</div>
+</div>
+</div>
+<!-- Detail Panel (Right Side) -->
+<aside class="w-[320px] bg-surface border-l border-outline-variant shadow-[0_0_15px_rgba(0,0,0,0.03)] flex flex-col z-10 overflow-y-auto">
+<div class="p-container-margin border-b border-outline-variant/50 bg-surface-container-lowest">
+<div class="flex justify-between items-start mb-2">
+<h2 class="font-headline-md text-headline-md text-primary">Entity Details</h2>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined text-lg" data-icon="close">close</span>
+</button>
+</div>
+<div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-sm bg-error-container text-error border border-error/20 mb-4">
+<div class="w-1.5 h-1.5 rounded-full bg-error"></div>
+<span class="font-label-caps text-label-caps">High Risk</span>
+</div>
+<div class="space-y-4 mt-2">
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Account ID</label>
+<div class="font-data-mono text-data-mono text-on-surface bg-surface-container-low p-2 rounded-md border border-outline-variant/30 flex justify-between items-center">
+                                SRC-8821-499X
+                                <span class="material-symbols-outlined text-[14px] text-on-surface-variant cursor-pointer hover:text-primary" data-icon="content_copy">content_copy</span>
+</div>
+</div>
+<div>
+<label class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Entity Name</label>
+<div class="font-title-sm text-title-sm text-on-surface">Global Trade Corp Ltd.</div>
+</div>
+</div>
+</div>
+<div class="p-container-margin space-y-6 flex-1">
+<!-- Metrics Bento -->
+<div class="grid grid-cols-2 gap-3">
+<div class="bg-surface-container-lowest border border-outline-variant/50 p-3 rounded-lg shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Total Inflow</span>
+<span class="font-data-mono text-data-mono text-on-surface font-semibold block">$2.4M</span>
+<span class="font-body-sm text-[10px] text-on-tertiary-container mt-1 block">30 days</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 p-3 rounded-lg shadow-sm">
+<span class="font-label-caps text-label-caps text-on-surface-variant block mb-1">Total Outflow</span>
+<span class="font-data-mono text-data-mono text-on-surface font-semibold block">$2.38M</span>
+<span class="font-body-sm text-[10px] text-on-tertiary-container mt-1 block">30 days</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 p-3 rounded-lg shadow-sm col-span-2">
+<div class="flex justify-between items-center mb-1">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Velocity Score</span>
+<span class="font-data-mono text-data-mono text-error font-semibold">92/100</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-2">
+<div class="bg-error h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+</div>
+</div>
+<!-- Related Transactions -->
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-3 border-b border-outline-variant/50 pb-2">Recent Transfers</h3>
+<div class="space-y-2">
+<div class="flex justify-between items-center p-2 rounded-md hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant/30 cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[16px]" data-icon="call_made">call_made</span>
+<span class="font-data-mono text-data-mono text-on-surface">TRX-992</span>
+</div>
+<span class="font-data-mono text-data-mono text-on-surface font-medium">$450K</span>
+</div>
+<div class="flex justify-between items-center p-2 rounded-md hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant/30 cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[16px]" data-icon="call_received">call_received</span>
+<span class="font-data-mono text-data-mono text-on-surface">TRX-104</span>
+</div>
+<span class="font-data-mono text-data-mono text-on-surface font-medium">$500K</span>
+</div>
+<div class="flex justify-between items-center p-2 rounded-md hover:bg-surface-container-low transition-colors border border-transparent hover:border-outline-variant/30 cursor-pointer">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-error text-[16px]" data-icon="call_made">call_made</span>
+<span class="font-data-mono text-data-mono text-on-surface">TRX-821</span>
+</div>
+<span class="font-data-mono text-data-mono text-on-surface font-medium">$125K</span>
+</div>
+</div>
+</div>
+</div>
+<div class="p-container-margin border-t border-outline-variant/50 mt-auto bg-surface">
+<button class="w-full bg-primary hover:bg-primary/90 text-on-primary font-title-sm text-title-sm py-2 rounded-lg shadow-sm transition-colors flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm" data-icon="flag">flag</span>
+                         Escalate Entity
+                     </button>
+</div>
+</aside>
+</main>
+</div>
+
+
+
+
+
+<script>
+    const token = sessionStorage.getItem("muleshield_token");
+    if (!token) { window.location.href = "index.html"; }
+
+    let activeAccountId = 9001;
+
+    async function loadNetwork() {
+        // Fetch standard cases first to get an ID
+        try {
+            const res = await fetch("http://localhost:8000/api/cases", {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.cases && data.cases.length > 0) {
+                    activeAccountId = data.cases[0].account_id;
+                }
+                fetchGraph(activeAccountId);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    async function fetchGraph(accountId) {
+        try {
+            const res = await fetch(`http://localhost:8000/api/cases/${accountId}/graph`, {
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            if (res.ok) {
+                const data = await res.json();
+                renderGraph(data);
+            }
+        } catch (err) {
+            console.error(err);
+        }
+    }
+
+    function renderGraph(graphData) {
+        const container = document.getElementById("network-container");
+        if (!container) return;
+        
+        // Setup height/styles
+        container.style.height = "500px";
+        container.style.backgroundColor = "#ffffff";
+        container.innerHTML = ""; // clear loading
+        
+        const vis = window.vis;
+        if (!vis) return;
+
+        const nodes = new vis.DataSet(graphData.nodes || []);
+        const edges = new vis.DataSet(graphData.edges || []);
+        const data = { nodes, edges };
+        
+        const options = {
+            physics: {
+                solver: 'forceAtlas2Based',
+                forceAtlas2Based: {
+                    gravitationalConstant: -30,
+                    centralGravity: 0.01,
+                    springLength: 100
+                }
+            },
+            interaction: { hover: true }
+        };
+        new vis.Network(container, data, options);
+
+        // Display graph metrics
+        if (graphData.metrics) {
+            const metricsPanel = document.querySelector(".grid.grid-cols-2");
+            if (metricsPanel) {
+                metricsPanel.innerHTML = `
+                    <div class="p-4 bg-surface-container-low rounded border border-outline-variant/40">
+                        <span class="block text-xs font-bold text-on-surface-variant mb-1">DENSITY</span>
+                        <span class="font-data-mono text-lg font-bold text-on-surface">${graphData.metrics.density?.toFixed(4) || "0.0120"}</span>
+                    </div>
+                    <div class="p-4 bg-surface-container-low rounded border border-outline-variant/40">
+                        <span class="block text-xs font-bold text-on-surface-variant mb-1">CONNECTED COMPONENTS</span>
+                        <span class="font-data-mono text-lg font-bold text-on-surface">${graphData.metrics.connected_components || "1"}</span>
+                    </div>
+                    <div class="p-4 bg-surface-container-low rounded border border-outline-variant/40 mt-3 col-span-2">
+                        <span class="block text-xs font-bold text-on-surface-variant mb-1">MAX CLIQUE SIZE</span>
+                        <span class="font-data-mono text-lg font-bold text-on-surface">${graphData.metrics.max_clique_size || "4"}</span>
+                    </div>
+                `;
+            }
+        }
+    }
+
+    loadNetwork();
+</script>
+
+</body></html>

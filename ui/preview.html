@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MuleShield PRO | Institutional-Grade Fraud Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                            "outline-variant": "#c6c6cd",
+                            "tertiary-fixed-dim": "#b7c8e1",
+                            "on-secondary-fixed": "#0d1c2f",
+                            "primary-fixed-dim": "#bec6e0",
+                            "on-tertiary": "#ffffff",
+                            "background": "#f7f9fb",
+                            "inverse-primary": "#bec6e0",
+                            "on-secondary-container": "#57657b",
+                            "surface-container-highest": "#e0e3e5",
+                            "tertiary-fixed": "#d3e4fe",
+                            "secondary-fixed-dim": "#b9c7e0",
+                            "secondary-fixed": "#d5e3fd",
+                            "on-secondary": "#ffffff",
+                            "on-background": "#191c1e",
+                            "surface-container-high": "#e6e8ea",
+                            "on-primary-fixed-variant": "#3f465c",
+                            "on-surface": "#191c1e",
+                            "on-error-container": "#93000a",
+                            "primary-container": "#131b2e",
+                            "on-tertiary-fixed": "#0b1c30",
+                            "surface-bright": "#f7f9fb",
+                            "surface-container": "#eceef0",
+                            "inverse-on-surface": "#eff1f3",
+                            "secondary-container": "#d5e3fd",
+                            "on-secondary-fixed-variant": "#3a485c",
+                            "on-primary-fixed": "#131b2e",
+                            "secondary": "#515f74",
+                            "outline": "#76777d",
+                            "on-tertiary-fixed-variant": "#38485d",
+                            "tertiary-container": "#0b1c30",
+                            "on-primary-container": "#7c839b",
+                            "tertiary": "#000000",
+                            "primary-fixed": "#dae2fd",
+                            "error": "#ba1a1a",
+                            "surface-container-low": "#f2f4f6",
+                            "inverse-surface": "#2d3133",
+                            "on-error": "#ffffff",
+                            "primary": "#000000",
+                            "surface-dim": "#d8dadc",
+                            "on-tertiary-container": "#75859d",
+                            "surface-container-lowest": "#ffffff",
+                            "surface-variant": "#e0e3e5",
+                            "error-container": "#ffdad6",
+                            "surface": "#f7f9fb",
+                            "on-primary": "#ffffff",
+                            "surface-tint": "#565e74",
+                            "on-surface-variant": "#45464d"
+                    },
+                    "borderRadius": {
+                            "DEFAULT": "0.125rem",
+                            "lg": "0.25rem",
+                            "xl": "0.5rem",
+                            "full": "0.75rem"
+                    },
+                    "spacing": {
+                            "container-margin": "24px",
+                            "unit": "4px",
+                            "gutter": "16px",
+                            "sidebar-width": "260px",
+                            "table-row-height": "40px"
+                    },
+                    "fontFamily": {
+                            "title-sm": [
+                                    "Inter"
+                            ],
+                            "data-mono": [
+                                    "JetBrains Mono"
+                            ],
+                            "display-lg": [
+                                    "Inter"
+                            ],
+                            "body-sm": [
+                                    "Inter"
+                            ],
+                            "label-caps": [
+                                    "Inter"
+                            ],
+                            "headline-md": [
+                                    "Inter"
+                            ],
+                            "body-md": [
+                                    "Inter"
+                            ]
+                    },
+                    "fontSize": {
+                            "title-sm": [
+                                    "18px",
+                                    {
+                                            "lineHeight": "24px",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "data-mono": [
+                                    "12px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "fontWeight": "450"
+                                    }
+                            ],
+                            "display-lg": [
+                                    "32px",
+                                    {
+                                            "lineHeight": "40px",
+                                            "letterSpacing": "-0.02em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "body-sm": [
+                                    "13px",
+                                    {
+                                            "lineHeight": "18px",
+                                            "fontWeight": "400"
+                                    }
+                            ],
+                            "label-caps": [
+                                    "11px",
+                                    {
+                                            "lineHeight": "16px",
+                                            "letterSpacing": "0.05em",
+                                            "fontWeight": "700"
+                                    }
+                            ],
+                            "headline-md": [
+                                    "24px",
+                                    {
+                                            "lineHeight": "32px",
+                                            "letterSpacing": "-0.01em",
+                                            "fontWeight": "600"
+                                    }
+                            ],
+                            "body-md": [
+                                    "14px",
+                                    {
+                                            "lineHeight": "20px",
+                                            "fontWeight": "400"
+                                    }
+                            ]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body-sm text-body-sm antialiased">
+<!-- TopNavBar (Shared Component) -->
+<nav class="fixed top-0 w-full z-50 bg-primary-container dark:bg-surface-container-highest border-b border-outline-variant flat no shadows">
+<div class="flex justify-between items-center px-container-margin h-16 w-full">
+<div class="flex items-center gap-8">
+<a class="font-display-lg text-display-lg tracking-tight text-surface-container-lowest" href="network.html">
+                    MuleShield PRO
+                </a>
+<!-- Desktop Navigation -->
+<div class="hidden md:flex items-center gap-6 font-title-sm text-title-sm">
+<a class="text-on-primary-container hover:text-primary-fixed-dim hover:bg-primary/10 transition-colors duration-200 px-3 py-2 rounded" href="#risk-engine">Risk Engine</a>
+<a class="text-on-primary-container hover:text-primary-fixed-dim hover:bg-primary/10 transition-colors duration-200 px-3 py-2 rounded" href="#network">Network Analysis</a>
+<a class="text-on-primary-container hover:text-primary-fixed-dim hover:bg-primary/10 transition-colors duration-200 px-3 py-2 rounded" href="#triage">Triage Board</a>
+<a class="text-on-primary-container hover:text-primary-fixed-dim hover:bg-primary/10 transition-colors duration-200 px-3 py-2 rounded" href="#insights">Insights</a>
+</div>
+</div>
+<div class="flex items-center gap-4 font-title-sm text-title-sm">
+<button class="hidden md:block text-on-primary-container hover:text-primary-fixed-dim px-4 py-2 transition-colors">Login</button>
+<button class="bg-secondary-fixed text-on-secondary-fixed hover:bg-secondary-fixed-dim transition-colors px-4 py-2 rounded">Request Demo</button>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="pt-16">
+<!-- Hero Section -->
+<section class="relative min-h-[921px] flex items-center justify-center overflow-hidden bg-primary-container px-container-margin">
+<!-- Technical Background Pattern (Subtle) -->
+<div class="absolute inset-0 opacity-20" style="background-image: radial-gradient(circle at 1px 1px, #ffffff 1px, transparent 0); background-size: 24px 24px;"></div>
+<div class="relative z-10 w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+<div class="space-y-6">
+<h1 class="font-display-lg text-display-lg text-surface-container-lowest md:text-[48px] md:leading-[56px] tracking-tight">
+                        Forensic Intelligence.<br/>
+<span class="text-secondary-fixed">Institutional Grade.</span>
+</h1>
+<p class="font-body-md text-body-md text-on-primary-container max-w-lg text-lg">
+                        MuleShield PRO is the definitive platform for identifying, tracking, and dismantling complex money mule networks. Built for high-stakes financial surveillance.
+                    </p>
+<div class="pt-4 flex gap-4">
+<button class="bg-secondary-fixed text-on-secondary-fixed font-title-sm text-title-sm px-6 py-3 rounded hover:bg-secondary-fixed-dim transition-colors shadow-sm">
+                            Request Institutional Access
+                        </button>
+<button class="border border-outline text-surface-container-lowest font-title-sm text-title-sm px-6 py-3 rounded hover:bg-surface-container-highest/10 transition-colors">
+                            View Documentation
+                        </button>
+</div>
+</div>
+<!-- Glass-morphism Card Preview -->
+<div class="relative">
+<div class="absolute inset-0 bg-secondary-fixed/20 blur-3xl rounded-full"></div>
+<div class="relative bg-surface-container-lowest/10 backdrop-blur-md border border-outline-variant/30 rounded-xl p-6 shadow-2xl">
+<div class="flex justify-between items-center mb-6 border-b border-outline-variant/30 pb-4">
+<h3 class="font-title-sm text-title-sm text-surface-container-lowest">Live Risk Engine Telemetry</h3>
+<span class="flex items-center gap-2 bg-error-container/20 text-error px-2 py-1 rounded text-[10px] uppercase font-bold tracking-wider">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+                                High Alert Status
+                            </span>
+</div>
+<!-- Mini Data Table -->
+<div class="space-y-2">
+<div class="grid grid-cols-4 gap-4 pb-2 border-b border-outline-variant/20 font-label-caps text-label-caps text-on-primary-container">
+<div>Entity ID</div>
+<div>Risk Score</div>
+<div>Velocity (24h)</div>
+<div>Status</div>
+</div>
+<!-- Rows -->
+<div class="grid grid-cols-4 gap-4 py-2 border-b border-outline-variant/10 text-surface-container-lowest font-data-mono text-data-mono items-center">
+<div>ENT-992-A</div>
+<div class="text-error">98.4</div>
+<div>$1.2M</div>
+<div><span class="bg-error-container text-on-error-container px-2 py-0.5 rounded-sm">Critical</span></div>
+</div>
+<div class="grid grid-cols-4 gap-4 py-2 border-b border-outline-variant/10 text-surface-container-lowest font-data-mono text-data-mono items-center">
+<div>ENT-104-X</div>
+<div class="text-[#f59e0b]">82.1</div>
+<div>$450K</div>
+<div><span class="bg-[#fef3c7] text-[#92400e] px-2 py-0.5 rounded-sm">Elevated</span></div>
+</div>
+<div class="grid grid-cols-4 gap-4 py-2 text-surface-container-lowest font-data-mono text-data-mono items-center">
+<div>ENT-776-B</div>
+<div>45.0</div>
+<div>$12K</div>
+<div><span class="bg-surface-container-high text-on-surface px-2 py-0.5 rounded-sm">Monitoring</span></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Real-time Metrics Banner -->
+<section class="bg-surface-container-lowest border-y border-outline-variant py-8 px-container-margin">
+<div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 divide-y md:divide-y-0 md:divide-x divide-outline-variant">
+<div class="flex flex-col items-center justify-center text-center px-4 py-2">
+<span class="font-display-lg text-display-lg text-primary md:text-[40px] leading-tight">$1.24B</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1 uppercase tracking-widest">Evaluated (Last 30d)</span>
+</div>
+<div class="flex flex-col items-center justify-center text-center px-4 py-2">
+<span class="font-display-lg text-display-lg text-primary md:text-[40px] leading-tight">3.4k</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1 uppercase tracking-widest">Alerts Flagged</span>
+</div>
+<div class="flex flex-col items-center justify-center text-center px-4 py-2">
+<span class="font-display-lg text-display-lg text-primary md:text-[40px] leading-tight">99.4%</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant mt-1 uppercase tracking-widest">Model Accuracy</span>
+</div>
+</div>
+</section>
+<!-- The Intelligence Core (Bento Grid) -->
+<section class="py-24 px-container-margin bg-surface">
+<div class="max-w-7xl mx-auto">
+<div class="mb-12">
+<h2 class="font-headline-md text-headline-md text-primary mb-2">The Intelligence Core</h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">
+                        A modular, interoperable suite of forensic tools designed to systematically dismantle illicit financial networks.
+                    </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[320px]">
+<!-- Network Analysis (Spans 2 cols on md) -->
+<div class="md:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col relative overflow-hidden group" id="network">
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary bg-surface-container p-2 rounded-lg" style="font-variation-settings: 'FILL' 1;">hub</span>
+<h3 class="font-title-sm text-title-sm text-primary">Network Analysis</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md mb-6">
+                                Visualize hidden connections. Our proprietary graph engine instantly maps complex mule rings across disparate data sources.
+                            </p>
+<!-- Stylized Graph Preview -->
+<div class="mt-auto h-40 w-full relative border border-outline-variant/50 rounded bg-surface-container-low overflow-hidden">
+<div class="absolute inset-0" style="background-image: radial-gradient(#cbd5e1 1px, transparent 1px); background-size: 16px 16px;"></div>
+<!-- Nodes -->
+<div class="absolute top-1/2 left-1/2 w-4 h-4 bg-error rounded-full shadow-[0_0_10px_rgba(186,26,26,0.5)] transform -translate-x-1/2 -translate-y-1/2 z-10"></div>
+<div class="absolute top-1/4 left-1/3 w-3 h-3 bg-secondary-fixed rounded-full z-10"></div>
+<div class="absolute top-3/4 left-1/4 w-3 h-3 bg-secondary-fixed rounded-full z-10"></div>
+<div class="absolute top-1/3 left-2/3 w-3 h-3 bg-secondary-fixed rounded-full z-10"></div>
+<div class="absolute top-2/3 left-3/4 w-3 h-3 bg-secondary-fixed rounded-full z-10"></div>
+<!-- Lines (SVG) -->
+<svg class="absolute inset-0 w-full h-full text-outline-variant" style="stroke: currentColor; stroke-width: 1.5;">
+<line stroke-dasharray="4" x1="50%" x2="33.3%" y1="50%" y2="25%"></line>
+<line x1="50%" x2="25%" y1="50%" y2="75%"></line>
+<line x1="50%" x2="66.6%" y1="50%" y2="33.3%"></line>
+<line stroke-dasharray="4" x1="50%" x2="75%" y1="50%" y2="66.6%"></line>
+<line stroke-dasharray="2" stroke-opacity="0.5" x1="33.3%" x2="66.6%" y1="25%" y2="33.3%"></line>
+</svg>
+</div>
+</div>
+</div>
+<!-- Risk Engine -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col" id="risk-engine">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary bg-surface-container p-2 rounded-lg" style="font-variation-settings: 'FILL' 1;">speed</span>
+<h3 class="font-title-sm text-title-sm text-primary">Risk Engine</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">
+                            XGBoost-powered scoring models trained on billions of transaction telemetry points.
+                        </p>
+<!-- Performance Curve Preview -->
+<div class="mt-auto h-32 w-full flex items-end justify-between px-2 gap-1 border-b border-l border-outline-variant pt-4 relative">
+<!-- Y axis labels -->
+<div class="absolute -left-6 bottom-0 font-data-mono text-[10px] text-outline">0</div>
+<div class="absolute -left-6 top-0 font-data-mono text-[10px] text-outline">1</div>
+<!-- Bars -->
+<div class="w-full bg-secondary-container rounded-t h-[20%]"></div>
+<div class="w-full bg-secondary-container rounded-t h-[35%]"></div>
+<div class="w-full bg-secondary-container rounded-t h-[45%]"></div>
+<div class="w-full bg-secondary-container rounded-t h-[60%]"></div>
+<div class="w-full bg-secondary-container rounded-t h-[75%]"></div>
+<div class="w-full bg-secondary-fixed rounded-t h-[85%]"></div>
+<div class="w-full bg-primary-container rounded-t h-[95%]"></div>
+</div>
+</div>
+<!-- Triage Board -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col" id="triage">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary bg-surface-container p-2 rounded-lg" style="font-variation-settings: 'FILL' 1;">view_kanban</span>
+<h3 class="font-title-sm text-title-sm text-primary">Triage Board</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-6">
+                            Streamline analyst workflows with prioritized, actionable case queues.
+                        </p>
+<!-- Mini Kanban -->
+<div class="mt-auto grid grid-cols-2 gap-2 h-32">
+<div class="bg-surface-container-low rounded p-2 flex flex-col gap-2">
+<div class="font-label-caps text-[10px] text-on-surface-variant">New</div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded p-2 h-10 w-full shadow-sm"></div>
+<div class="bg-surface-container-lowest border border-outline-variant/50 rounded p-2 h-10 w-full shadow-sm"></div>
+</div>
+<div class="bg-surface-container-low rounded p-2 flex flex-col gap-2">
+<div class="font-label-caps text-[10px] text-on-surface-variant">In Progress</div>
+<div class="bg-surface-container-lowest border-l-2 border-secondary-fixed rounded p-2 h-10 w-full shadow-sm"></div>
+</div>
+</div>
+</div>
+<!-- Regulatory Compliance -->
+<div class="md:col-span-2 bg-surface-container-lowest border border-outline-variant rounded-xl p-6 shadow-sm flex flex-col md:flex-row items-center gap-8">
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-4">
+<span class="material-symbols-outlined text-secondary bg-surface-container p-2 rounded-lg" style="font-variation-settings: 'FILL' 1;">gavel</span>
+<h3 class="font-title-sm text-title-sm text-primary">STR Export Hub</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
+                                Automatically generate Suspicious Transaction Reports (STRs) formatted for regional regulatory bodies. Fully auditable, immutable, and precise.
+                            </p>
+<a class="font-label-caps text-label-caps text-primary hover:underline flex items-center gap-1" href="javascript:void(0)">
+                                View Regulatory Standards <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+<div class="shrink-0 w-full md:w-64 border border-outline-variant/50 rounded-lg p-4 bg-surface flex flex-col items-center justify-center text-center gap-2">
+<span class="material-symbols-outlined text-primary text-3xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+<div class="font-title-sm text-title-sm text-primary">Signed &amp; Timestamped</div>
+<div class="font-data-mono text-[10px] text-on-surface-variant">SHA-256 Hash Verified</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Footer (Shared Component) -->
+<footer class="w-full py-12 bg-surface-container-lowest dark:bg-tertiary-container border-t border-outline-variant flat no shadows">
+<div class="flex flex-col md:flex-row justify-between items-center px-container-margin max-w-7xl mx-auto gap-8">
+<div class="font-headline-md text-headline-md font-bold text-primary">
+                MuleShield PRO
+            </div>
+<div class="flex flex-wrap justify-center gap-6 font-body-sm text-body-sm">
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="javascript:void(0)">Privacy Policy</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="javascript:void(0)">Terms of Service</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="javascript:void(0)">Security Audit</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors" href="javascript:void(0)">Regulatory Compliance</a>
+</div>
+<div class="text-on-surface dark:text-on-tertiary-container font-body-sm text-body-sm text-center md:text-right">
+                © 2024 MuleShield PRO. Institutional-Grade Fraud Intelligence.
+            </div>
+</div>
+</footer>
+</body></html>

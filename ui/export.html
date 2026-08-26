@@ -1,0 +1,210 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MuleShield PRO | Intelligence Export Hub</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#d5e3fd",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-container": "#0b1c30",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#75859d",
+                        "surface-dim": "#d8dadc",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#000000",
+                        "inverse-surface": "#2d3133",
+                        "primary-container": "#131b2e",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-secondary-container": "#57657b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "primary-fixed": "#dae2fd",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary": "#515f74",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#565e74",
+                        "surface-container-high": "#e6e8ea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table-row-height": "40px",
+                        "sidebar-width": "260px",
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["12px", { "lineHeight": "16px", "fontWeight": "450" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .a4-page {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-gutter px-unit bg-primary-container dark:bg-primary-container fixed left-0 top-0 h-full w-[260px] border-r border-outline-variant z-40">
+<div class="px-gutter mb-8 mt-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-fixed">shield</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary truncate">MuleShield PRO</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container truncate">Forensic Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="dashboard.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-title-sm text-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="live-transactions.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">payments</span>
+<span class="font-title-sm text-body-sm">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="network.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">hub</span>
+<span class="font-title-sm text-body-sm">Network Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="cases.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">folder_shared</span>
+<span class="font-title-sm text-body-sm">Case Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="risk-engine.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">security_update_good</span>
+<span class="font-title-sm text-body-sm">Risk Engine</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform shadow-sm group" href="reporting.html">
+<span class="material-symbols-outlined fill group-hover:scale-110 transition-transform">assessment</span>
+<span class="font-title-sm text-body-sm">Reporting</span>
+</a>
+</nav>
+<div class="mt-auto pt-4 border-t border-on-primary-fixed-variant/20 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="settings.html">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="font-title-sm text-body-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="javascript:void(0)">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help_outline</span>
+<span class="font-title-sm text-body-sm">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-0 md:ml-[260px] flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim text-on-surface dark:text-on-surface docked full-width top-0 sticky z-50 shadow-sm border-b border-outline-variant flex justify-between items-center w-full h-[64px] px-container-margin no-print">
+<div class="flex items-center gap-6">
+<!-- Mobile Menu Button (Hidden on Desktop) -->
+<button class="md:hidden p-2 text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="bg-white border border-outline-variant text-primary font-title-sm text-body-sm px-4 py-1.5 rounded hover:bg-surface-container-low transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">share</span>
+                        Share with Regulator
+                    </button>
+<button class="bg-primary text-on-primary font-title-sm text-body-sm px-4 py-1.5 rounded hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2" onclick="window.print()">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                        Export PDF
+                    </button>
+</div>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Report Canvas -->
+<main class="flex-1 p-container-margin bg-background overflow-auto"><div class="max-w-[1200px] mx-auto space-y-8"><div class="flex justify-between items-end"><div class="space-y-1"><h2 class="font-headline-md text-headline-md text-primary">Intelligence Export Hub</h2><p class="text-on-surface-variant">Configure and generate forensic intelligence packages for regulatory compliance.</p></div><div class="flex gap-3"><button class="bg-white border border-outline-variant px-4 py-2 rounded flex items-center gap-2 hover:bg-surface-container-low transition-colors"><span class="material-symbols-outlined">history</span>Export History</button><button class="bg-primary text-on-primary px-6 py-2 rounded font-bold hover:bg-primary/90 transition-colors">Generate All</button></div></div><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><section class="lg:col-span-2 space-y-6"><div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm"><h3 class="font-title-sm text-title-sm mb-6 flex items-center gap-2"><span class="material-symbols-outlined text-secondary">dashboard_customize</span>Custom Report Builder</h3><div class="border-2 border-dashed border-outline-variant rounded-lg p-8 text-center bg-surface-container-low mb-6"><p class="text-on-surface-variant mb-4">Drag and drop data modules to build your custom report</p><div class="flex flex-wrap justify-center gap-3"><div class="px-4 py-2 bg-white border border-outline-variant rounded shadow-sm cursor-move flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">drag_indicator</span>Transaction Log</div><div class="px-4 py-2 bg-white border border-outline-variant rounded shadow-sm cursor-move flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">drag_indicator</span>Risk Scorecard</div><div class="px-4 py-2 bg-white border border-outline-variant rounded shadow-sm cursor-move flex items-center gap-2"><span class="material-symbols-outlined text-[18px]">drag_indicator</span>Network Graph</div></div></div><div class="space-y-4"><div class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">description</span><span class="font-medium">Executive Summary</span></div><button class="text-error hover:bg-error-container p-1 rounded"><span class="material-symbols-outlined">delete</span></button></div><div class="flex items-center justify-between p-4 bg-surface-container-lowest border border-outline-variant rounded"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">analytics</span><span class="font-medium">AI Explanation (SHAP)</span></div><button class="text-error hover:bg-error-container p-1 rounded"><span class="material-symbols-outlined">delete</span></button></div></div></div></section><aside class="space-y-6"><div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-6 shadow-sm"><h3 class="font-title-sm text-title-sm mb-6 flex items-center gap-2"><span class="material-symbols-outlined text-secondary">output</span>Export Formats</h3><div class="space-y-3"><label class="flex items-center justify-between p-4 border border-primary bg-primary-container/5 rounded cursor-pointer"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-primary">picture_as_pdf</span><div><p class="font-bold">PDF Document</p><p class="text-body-sm text-on-surface-variant">Official Regulatory Format</p></div></div><input checked="" class="text-primary focus:ring-primary" name="format" type="radio"></label><label class="flex items-center justify-between p-4 border border-outline-variant rounded hover:bg-surface-container-low cursor-pointer"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">table_chart</span><div><p class="font-bold">CSV Spreadsheet</p><p class="text-body-sm text-on-surface-variant">Raw Transaction Data</p></div></div><input class="text-primary focus:ring-primary" name="format" type="radio"></label><label class="flex items-center justify-between p-4 border border-outline-variant rounded hover:bg-surface-container-low cursor-pointer"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-secondary">api</span><div><p class="font-bold">JSON / API</p><p class="text-body-sm text-on-surface-variant">Machine-readable Feed</p></div></div><input class="text-primary focus:ring-primary" name="format" type="radio"></label></div><button class="w-full mt-6 bg-primary text-on-primary py-3 rounded font-bold flex items-center justify-center gap-2"><span class="material-symbols-outlined">download</span>Download Package</button></div><div class="bg-secondary-container/30 border border-secondary/20 rounded-lg p-4"><div class="flex gap-3"><span class="material-symbols-outlined text-secondary">info</span><p class="text-body-sm text-on-secondary-container">All exports are cryptographically signed and timestamped for chain-of-custody verification.</p></div></div></aside></div></div></main>
+</div>
+
+
+</body></html>
