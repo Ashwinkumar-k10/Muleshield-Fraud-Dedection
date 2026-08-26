@@ -1,0 +1,575 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MuleShield PRO - Overview Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-fixed-dim": "#bec6e0",
+                      "tertiary-fixed": "#d3e4fe",
+                      "secondary-fixed": "#d5e3fd",
+                      "on-surface": "#191c1e",
+                      "on-surface-variant": "#45464d",
+                      "on-tertiary-container": "#75859d",
+                      "outline-variant": "#c6c6cd",
+                      "primary-fixed": "#dae2fd",
+                      "secondary-fixed-dim": "#b9c7e0",
+                      "primary": "#000000",
+                      "on-primary-container": "#7c839b",
+                      "surface-tint": "#565e74",
+                      "tertiary-fixed-dim": "#b7c8e1",
+                      "surface-container-highest": "#e0e3e5",
+                      "on-primary-fixed-variant": "#3f465c",
+                      "error-container": "#ffdad6",
+                      "primary-container": "#131b2e",
+                      "secondary": "#515f74",
+                      "on-background": "#191c1e",
+                      "surface-bright": "#f7f9fb",
+                      "on-tertiary-fixed": "#0b1c30",
+                      "on-secondary-fixed-variant": "#3a485c",
+                      "inverse-surface": "#2d3133",
+                      "inverse-on-surface": "#eff1f3",
+                      "on-primary": "#ffffff",
+                      "surface-variant": "#e0e3e5",
+                      "on-secondary": "#ffffff",
+                      "outline": "#76777d",
+                      "error": "#ba1a1a",
+                      "secondary-container": "#d5e3fd",
+                      "on-tertiary-fixed-variant": "#38485d",
+                      "surface-container-high": "#e6e8ea",
+                      "tertiary": "#000000",
+                      "inverse-primary": "#bec6e0",
+                      "on-error": "#ffffff",
+                      "on-primary-fixed": "#131b2e",
+                      "on-tertiary": "#ffffff",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-low": "#f2f4f6",
+                      "surface-dim": "#d8dadc",
+                      "background": "#f7f9fb",
+                      "tertiary-container": "#0b1c30",
+                      "on-secondary-container": "#57657b",
+                      "surface-container": "#eceef0",
+                      "surface": "#f7f9fb",
+                      "on-error-container": "#93000a",
+                      "on-secondary-fixed": "#0d1c2f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "table-row-height": "40px",
+                      "gutter": "16px",
+                      "unit": "4px",
+                      "sidebar-width": "260px",
+                      "container-margin": "24px"
+              },
+              "fontFamily": {
+                      "label-caps": [
+                              "Inter"
+                      ],
+                      "headline-md": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "data-mono": [
+                              "JetBrains Mono"
+                      ],
+                      "title-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "body-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-caps": [
+                              "11px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-md": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "data-mono": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "450"
+                              }
+                      ],
+                      "title-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "body-sm": [
+                              "13px",
+                              {
+                                      "lineHeight": "18px",
+                                      "fontWeight": "400"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Custom Scrollbar for dense data tables */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface-container-low'); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant'); 
+            border-radius: theme('borderRadius.full');
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline'); 
+        }
+
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr);
+            gap: theme('spacing.gutter');
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<nav class="hidden md:flex fixed left-0 top-0 h-full w-[260px] bg-primary-container dark:bg-primary-container border-r border-outline-variant flex-col py-gutter px-unit z-40">
+<!-- Header Logo -->
+<div class="px-3 mb-8 mt-2 flex flex-col">
+<span class="font-headline-md text-headline-md font-bold text-on-primary">MuleShield PRO</span>
+<span class="font-label-caps text-label-caps text-on-primary-container">Forensic Intelligence</span>
+</div>
+<!-- Navigation Links -->
+<ul class="flex-1 flex flex-col gap-1 w-full">
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-body-md text-body-md font-medium">Overview</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">payments</span>
+<span class="font-body-md text-body-md font-medium">Transactions</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">hub</span>
+<span class="font-body-md text-body-md font-medium">Network Analysis</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">folder_shared</span>
+<span class="font-body-md text-body-md font-medium">Case Management</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">security_update_good</span>
+<span class="font-body-md text-body-md font-medium">Risk Engine</span>
+</a>
+</li>
+<li class="">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">assessment</span>
+<span class="font-body-md text-body-md font-medium">Reporting</span>
+</a>
+</li>
+
+</ul>
+<!-- Footer Links -->
+<div class="mt-auto pt-4 border-t border-outline-variant/30 flex flex-col gap-1 w-full">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-body-md text-body-md font-medium">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-body-md text-body-md font-medium">Support</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<div class="flex-1 ml-0 md:ml-[260px] flex flex-col min-w-0 bg-background">
+<!-- TopNavBar -->
+<header class="hidden md:flex justify-between items-center w-full h-[64px] px-container-margin bg-surface dark:bg-surface-dim border-b border-outline-variant shadow-sm sticky top-0 z-30">
+<div class="flex items-center gap-8 h-full">
+<span class="font-headline-md text-headline-md font-black text-primary hidden lg:block">Overview Dashboard</span>
+
+</div>
+<div class="flex items-center gap-4">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container-low transition-colors overflow-hidden border border-outline-variant">
+<img alt="Analyst Profile" class="w-full h-full object-cover" data-alt="A small, professional headshot portrait of a forensic analyst, used as a profile avatar. The background is a plain, neutral grey. Lighting is bright, soft, and professional, characteristic of a light-mode corporate dashboard environment. The image is clean, sharp, and business-appropriate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBaii5mT9OUzGsIlB3Q1gap8AzEoJEQnMLSpQ1y7fjEFlNuQnb0saIDQLnZGpf-WpmI_GozDtgyTeh3keDqoMDfd_3L6SxXoI9ZI6dx9UigJLClvzhm94SLPfxr2vTn0GeFXOgO7ipJdG5BynqGHvgfsI4RHPw9k9H4kXb0YfsyUou_3yLou2VMNI3qb-GtAaq-Ohq52IST5y92UyuPO-yBdw5hVNZZCk2XTvDVwAsLLJeGu2zFnbOq">
+</button>
+</div>
+</header>
+<!-- Dashboard Canvas -->
+<main class="flex-1 p-gutter md:p-container-margin overflow-y-auto w-full">
+<!-- Page Header (Mobile Only) -->
+<div class="md:hidden mb-6">
+<h1 class="font-headline-md text-headline-md font-black text-primary">Overview Dashboard</h1>
+</div>
+<!-- Bento Grid Layout -->
+<div class="bento-grid">
+<!-- 1. Key Metrics Cards (Top Row) -->
+<div class="col-span-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter mb-2">
+<!-- Metric: Transaction Volume -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Total Transaction Volume</span>
+<span class="material-symbols-outlined text-outline">swap_horiz</span>
+</div>
+<div class="mt-2">
+<span class="font-display-lg text-display-lg font-bold text-on-surface">$1.24B</span>
+</div>
+<div class="flex items-center gap-1 mt-auto">
+<span class="material-symbols-outlined text-error text-[16px]">trending_up</span>
+<span class="font-data-mono text-data-mono text-error font-medium">+14.2%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-1">vs last 30d</span>
+</div>
+</div>
+<!-- Metric: Active Alerts -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Active Alerts</span>
+<span class="material-symbols-outlined text-outline">warning</span>
+</div>
+<div class="mt-2">
+<span class="font-display-lg text-display-lg font-bold text-on-surface">3,492</span>
+</div>
+<div class="flex items-center gap-1 mt-auto">
+<span class="material-symbols-outlined text-on-surface-variant text-[16px]">trending_flat</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant font-medium">--</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-1">vs last 30d</span>
+</div>
+</div>
+<!-- Metric: Critical Cases -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Critical Cases</span>
+<span class="material-symbols-outlined text-outline">crisis_alert</span>
+</div>
+<div class="mt-2">
+<span class="font-display-lg text-display-lg font-bold text-error">128</span>
+</div>
+<div class="flex items-center gap-1 mt-auto">
+<span class="material-symbols-outlined text-error text-[16px]">trending_up</span>
+<span class="font-data-mono text-data-mono text-error font-medium">+5.4%</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant ml-1">vs last 30d</span>
+</div>
+</div>
+<!-- Metric: Fraud Loss vs Prevented -->
+<div class="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg flex flex-col gap-2">
+<div class="flex justify-between items-start">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Prevented / Realized Loss</span>
+<span class="material-symbols-outlined text-outline">account_balance_wallet</span>
+</div>
+<div class="mt-2 flex flex-col gap-1">
+<div class="flex items-baseline gap-2">
+<span class="font-title-sm text-title-sm font-bold text-primary">$42.1M</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Prevented</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden flex">
+<div class="h-full bg-primary" style="width: 85%"></div>
+<div class="h-full bg-error" style="width: 15%"></div>
+</div>
+<div class="flex items-baseline gap-2 mt-1">
+<span class="font-title-sm text-title-sm font-bold text-error">$7.4M</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Realized</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 2. Charts Section -->
+<!-- Risk Trend Chart (Line) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col min-h-[300px]">
+<div class="flex justify-between items-center mb-6">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">Risk Score Trend</h2>
+<select class="bg-surface border-outline-variant rounded text-body-sm font-body-sm py-1 pl-2 pr-8 text-on-surface-variant focus:border-blue-500 focus:ring-1 focus:ring-blue-500/10">
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+<option>YTD</option>
+</select>
+</div>
+<!-- SVG Chart Placeholder (Simulated Line Chart) -->
+<div class="flex-1 relative w-full h-full min-h-[200px] bg-surface-bright rounded border border-outline-variant/30 flex items-end px-4 pb-4 pt-10">
+<!-- Y-Axis Labels -->
+<div class="absolute left-2 top-0 bottom-6 flex flex-col justify-between py-4 text-[10px] text-outline-variant font-data-mono">
+<span class="">100</span>
+<span class="">75</span>
+<span class="">50</span>
+<span class="">25</span>
+<span class="">0</span>
+</div>
+<!-- Grid Lines -->
+<div class="absolute left-8 right-4 top-4 bottom-8 flex flex-col justify-between z-0">
+<div class="border-b border-outline-variant/20 w-full"></div>
+<div class="border-b border-outline-variant/20 w-full"></div>
+<div class="border-b border-outline-variant/20 w-full"></div>
+<div class="border-b border-outline-variant/20 w-full"></div>
+<div class="border-b border-outline-variant/20 w-full"></div>
+</div>
+<!-- Simulated Line Path -->
+<svg class="absolute inset-0 w-full h-full z-10 px-8 py-4" preserveAspectRatio="none" viewBox="0 0 100 100">
+<!-- Trend Line 1 (Average Risk) -->
+<path class="text-primary opacity-50" d="M 0 80 Q 10 75, 20 60 T 40 55 T 60 40 T 80 50 T 100 30" fill="none" stroke="currentColor" stroke-width="2"></path>
+<!-- Trend Line 2 (Peak Anomalies) -->
+<path class="text-error" d="M 0 90 Q 15 85, 25 70 T 45 40 T 65 20 T 85 45 T 100 15" fill="none" stroke="currentColor" stroke-width="2"></path>
+</svg>
+<!-- X-Axis Labels -->
+<div class="absolute bottom-2 left-8 right-4 flex justify-between text-[10px] text-outline-variant font-data-mono">
+<span class="">Mon</span>
+<span class="">Tue</span>
+<span class="">Wed</span>
+<span class="">Thu</span>
+<span class="">Fri</span>
+<span class="">Sat</span>
+<span class="">Sun</span>
+</div>
+</div>
+</div>
+<!-- Alert Distribution (Donut Chart) -->
+<div class="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col min-h-[300px]">
+<div class="mb-4">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">Alert Distribution</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">By Typology</p>
+</div>
+<div class="flex-1 flex flex-col items-center justify-center gap-6">
+<!-- Simulated Donut Chart -->
+<div class="relative w-40 h-40 rounded-full border-[12px] border-surface-container-low" style="background: conic-gradient(
+                            theme('colors.error') 0% 25%, 
+                            theme('colors.primary-fixed-dim') 25% 60%, 
+                            theme('colors.secondary') 60% 85%, 
+                            theme('colors.outline-variant') 85% 100%
+                        );">
+<div class="absolute inset-2 bg-surface-container-lowest rounded-full flex items-center justify-center flex-col shadow-inner">
+<span class="font-display-lg text-display-lg font-bold text-on-surface">3.4k</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">Total</span>
+</div>
+</div>
+<!-- Legend -->
+<div class="w-full flex flex-col gap-2">
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm bg-error"></div><span class="">Structuring</span></div>
+<span class="font-data-mono font-medium">25%</span>
+</div>
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm bg-primary-fixed-dim"></div><span class="">Velocity Flags</span></div>
+<span class="font-data-mono font-medium">35%</span>
+</div>
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm bg-secondary"></div><span class="">Geo-Anomalies</span></div>
+<span class="font-data-mono font-medium">25%</span>
+</div>
+<div class="flex justify-between items-center font-body-sm text-body-sm">
+<div class="flex items-center gap-2"><div class="w-3 h-3 rounded-sm bg-outline-variant"></div><span class="">Other</span></div>
+<span class="font-data-mono font-medium">15%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 3. Lists Section -->
+<!-- Emerging Mule Networks (Worklist) -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded-lg flex flex-col overflow-hidden">
+<div class="p-4 border-b border-outline-variant bg-surface-bright flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">Top Emerging Networks</h2>
+<button class="font-label-caps text-label-caps text-primary hover:underline">View All</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface border-b border-outline-variant">
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Network ID</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Nodes</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Exposure</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Risk Level</th>
+<th class="p-3 font-label-caps text-label-caps text-on-surface-variant font-medium">Last Active</th>
+</tr>
+</thead>
+<tbody class="font-body-sm text-body-sm divide-y divide-outline-variant/30">
+<tr class="hover:bg-surface-container-low transition-colors h-table-row-height">
+<td class="p-3 font-data-mono text-data-mono font-medium text-primary">NW-8892-A</td>
+<td class="p-3">24</td>
+<td class="p-3 font-data-mono">$1.2M</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-error-container text-on-error-container border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span> Critical
+                                        </span>
+</td>
+<td class="p-3 text-on-surface-variant">2 mins ago</td>
+</tr>
+<tr class="bg-surface hover:bg-surface-container-low transition-colors h-table-row-height">
+<td class="p-3 font-data-mono text-data-mono font-medium text-primary">NW-4410-B</td>
+<td class="p-3">18</td>
+<td class="p-3 font-data-mono">$840K</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-error-container text-on-error-container border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span> High
+                                        </span>
+</td>
+<td class="p-3 text-on-surface-variant">14 mins ago</td>
+</tr>
+<tr class="hover:bg-surface-container-low transition-colors h-table-row-height">
+<td class="p-3 font-data-mono text-data-mono font-medium text-primary">NW-9021-C</td>
+<td class="p-3">42</td>
+<td class="p-3 font-data-mono">$2.1M</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-container-highest text-on-surface border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline mr-1.5"></span> Elev
+                                        </span>
+</td>
+<td class="p-3 text-on-surface-variant">1 hr ago</td>
+</tr>
+<tr class="bg-surface hover:bg-surface-container-low transition-colors h-table-row-height">
+<td class="p-3 font-data-mono text-data-mono font-medium text-primary">NW-1104-D</td>
+<td class="p-3">8</td>
+<td class="p-3 font-data-mono">$120K</td>
+<td class="p-3">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-surface-container-highest text-on-surface border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-outline mr-1.5"></span> Elev
+                                        </span>
+</td>
+<td class="p-3 text-on-surface-variant">3 hrs ago</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Column: Recent Critical Alerts & System Health -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-gutter">
+<!-- Recent Critical Alerts (Audit Timeline Style) -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col flex-1">
+<div class="mb-4 flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">Urgent Queue</h2>
+<span class="material-symbols-outlined text-error">priority_high</span>
+</div>
+<div class="relative pl-4 border-l border-outline-variant/50 ml-2 space-y-6 flex-1">
+<!-- Alert Item -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-error ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-error">Velocity Spike</span>
+<span class="font-data-mono text-data-mono font-medium">Acct: ...4492</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">15 transfers in &lt;5m originating from suspect IP block.</p>
+<span class="font-body-sm text-body-sm text-outline text-[10px] mt-1">10:42 AM</span>
+</div>
+</div>
+<!-- Alert Item -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-error ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-error">Geo-Mismatch</span>
+<span class="font-data-mono text-data-mono font-medium">Acct: ...8103</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Login from RU concurrent with ATM withdrawal in US.</p>
+<span class="font-body-sm text-body-sm text-outline text-[10px] mt-1">10:15 AM</span>
+</div>
+</div>
+<!-- Alert Item -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 w-2.5 h-2.5 rounded-full bg-surface-tint ring-4 ring-surface-container-lowest"></div>
+<div class="flex flex-col gap-1">
+<span class="font-label-caps text-label-caps text-on-surface">Structuring Risk</span>
+<span class="font-data-mono text-data-mono font-medium">Entity: Corp-X</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">Multiple deposits just below $10k reporting threshold.</p>
+<span class="font-body-sm text-body-sm text-outline text-[10px] mt-1">09:30 AM</span>
+</div>
+</div>
+</div>
+<button class="mt-4 w-full py-2 bg-surface text-on-surface border border-outline-variant rounded font-body-sm text-body-sm hover:bg-surface-container-low transition-colors">
+                            View All Alerts
+                        </button>
+</div>
+<!-- System Health Widget -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 flex flex-col gap-4">
+<div class="flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm font-bold text-on-surface">System Health</h2>
+<div class="flex items-center gap-1 text-green-600">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="font-label-caps text-label-caps text-green-600">Optimal</span>
+</div>
+</div>
+<div class="space-y-3">
+<div class="flex justify-between items-center">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Ingestion Latency</span>
+<span class="font-data-mono text-data-mono font-medium">1.2ms</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary-fixed-dim" style="width: 15%"></div>
+</div>
+<div class="flex justify-between items-center mt-2">
+<span class="font-body-sm text-body-sm text-on-surface-variant">Model Accuracy (24h)</span>
+<span class="font-data-mono text-data-mono font-medium">99.4%</span>
+</div>
+<div class="w-full h-1 bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary" style="width: 99%"></div>
+</div>
+</div>
+</div>
+</div>
+</div> <!-- End Bento Grid -->
+</main>
+</div>
+
+
+
+
+</body></html>

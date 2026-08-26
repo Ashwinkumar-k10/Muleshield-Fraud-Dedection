@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-surface" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Secure Login - MuleShield PRO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#d3e4fe",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary-container": "#75859d",
+                        "outline-variant": "#c6c6cd",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "primary": "#000000",
+                        "on-primary-container": "#7c839b",
+                        "surface-tint": "#565e74",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#131b2e",
+                        "secondary": "#515f74",
+                        "on-background": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "inverse-surface": "#2d3133",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "outline": "#76777d",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#d5e3fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "surface-container-high": "#e6e8ea",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#bec6e0",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-dim": "#d8dadc",
+                        "background": "#f7f9fb",
+                        "tertiary-container": "#0b1c30",
+                        "on-secondary-container": "#57657b",
+                        "surface-container": "#eceef0",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#0d1c2f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table-row-height": "40px",
+                        "gutter": "16px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "container-margin": "24px"
+                    },
+                    "fontFamily": {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "data-mono": ["12px", { "lineHeight": "16px", "fontWeight": "450" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .bg-grid-pattern {
+            background-image: linear-gradient(to right, #e0e3e5 1px, transparent 1px),
+                              linear-gradient(to bottom, #e0e3e5 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+    </style>
+</head>
+<body class="h-full flex items-center justify-center bg-surface relative overflow-hidden font-body-md text-on-surface">
+<!-- Background Pattern & Image -->
+<div class="absolute inset-0 bg-grid-pattern opacity-50 z-0"></div>
+<div class="absolute right-0 top-0 w-1/2 h-full hidden lg:block z-0 opacity-20" data-alt="A blurred, professional corporate banking environment with subtle blue and silver lighting. High-end modern architecture, glass walls, and abstract data visualizations subtly overlaid on screens in the background, conveying security and high-stakes financial surveillance." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCzWPJDpJMlgp2btI-ucB8dTHmUr_8F4J0xWecgdyMxxKfBWf1kJMT79G-iGHru6Yp5MffVVxr3tuqvUpGOpc-SNgIBAybAMU6M5a0Kp8YMezgYBrhqhH28MMtZ7pdzM3d74aLru5gVUUCsECo0ef_anQ85AS-dxEh1qhmqswAlg0846Le1K-j-AO23QB7S8rhfk6dwclOjcGTTA8rjLMyrllxAzKtYCPBGM7IXMRRKe3p4cufCF8H0')"></div>
+<div class="absolute inset-0 bg-gradient-to-r from-surface via-surface/90 to-transparent z-0 lg:w-3/4"></div>
+<!-- Login Container -->
+<div class="relative z-10 w-full max-w-md px-container-margin py-8 sm:px-12 bg-surface-container-lowest border border-outline-variant shadow-sm rounded-xl">
+<!-- Header -->
+<div class="text-center mb-8">
+<h1 class="font-headline-md text-headline-md font-bold text-primary mb-2">MuleShield PRO</h1>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Forensic Intelligence</p>
+</div>
+<!-- Security Notice -->
+<div class="bg-surface-container-low border-l-4 border-primary p-4 mb-6 rounded-r">
+<div class="flex items-start">
+<span aria-hidden="true" class="material-symbols-outlined text-primary mr-3 text-[20px]" data-icon="lock">lock</span>
+<div>
+<h3 class="font-title-sm text-title-sm text-on-surface mb-1">Authorized Personnel Only</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant leading-relaxed">
+                        Access is restricted to authorized analysts. All activities are monitored and audited for security purposes.
+                    </p>
+</div>
+</div>
+</div>
+<!-- Login Form -->
+<form action="#" class="space-y-6" method="POST">
+<!-- Credentials Step (Visible initially) -->
+<div id="credentials-step">
+<div class="space-y-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase" for="username">Analyst ID / Username</label>
+<div class="relative rounded-md shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="person">person</span>
+</div>
+<input class="block w-full rounded-md border-outline-variant pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 sm:text-sm font-data-mono text-data-mono bg-surface-container-lowest text-on-surface" id="username" name="username" placeholder="E.g., JD-8492" required="" type="text"/>
+</div>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1 uppercase" for="password">Master Password</label>
+<div class="relative rounded-md shadow-sm">
+<div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="material-symbols-outlined text-outline text-[18px]" data-icon="key">key</span>
+</div>
+<input class="block w-full rounded-md border-outline-variant pl-10 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 sm:text-sm font-data-mono text-data-mono bg-surface-container-lowest text-on-surface" id="password" name="password" required="" type="password"/>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between mt-4">
+<div class="flex items-center">
+<input class="h-4 w-4 rounded border-outline-variant text-primary focus:ring-primary" id="remember-me" name="remember-me" type="checkbox"/>
+<label class="ml-2 block font-body-sm text-body-sm text-on-surface-variant" for="remember-me">Remember device</label>
+</div>
+<div class="text-sm">
+<a class="font-body-sm text-body-sm font-medium text-primary hover:text-on-surface-variant transition-colors" href="#">Forgot Password?</a>
+</div>
+</div>
+<div class="mt-6">
+<button class="flex w-full justify-center rounded bg-primary px-3 py-2.5 font-label-caps text-label-caps text-on-primary shadow-sm hover:bg-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors uppercase tracking-wider" onclick="showMfaStep()" type="button">
+                        Continue to MFA
+                    </button>
+</div>
+</div>
+<!-- MFA Step (Hidden initially) -->
+<div class="hidden" id="mfa-step">
+<div class="text-center mb-6">
+<span class="material-symbols-outlined text-primary text-4xl mb-2" data-icon="security">security</span>
+<h2 class="font-title-sm text-title-sm text-on-surface">Two-Factor Authentication</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Enter the 6-digit code from your authenticator app.</p>
+</div>
+<div>
+<label class="sr-only" for="mfa-code">Authentication Code</label>
+<input class="block w-full text-center rounded-md border-outline-variant focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 font-data-mono text-display-lg py-3 tracking-widest bg-surface-container-lowest text-on-surface" id="mfa-code" maxlength="6" name="mfa-code" placeholder="000000" type="text"/>
+</div>
+<div class="mt-6 flex gap-3">
+<button class="flex-1 justify-center rounded bg-surface-container-lowest px-3 py-2.5 border border-outline-variant font-label-caps text-label-caps text-on-surface shadow-sm hover:bg-surface-container-low focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors uppercase tracking-wider" onclick="showCredentialsStep()" type="button">
+                        Back
+                    </button>
+<button class="flex-[2] justify-center rounded bg-primary px-3 py-2.5 font-label-caps text-label-caps text-on-primary shadow-sm hover:bg-on-surface-variant focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-colors uppercase tracking-wider" type="submit">
+                        Verify & Login
+                    </button>
+</div>
+</div>
+</form>
+<!-- Footer Actions -->
+<div class="mt-8 border-t border-outline-variant pt-6 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                New analyst? 
+                <a class="font-medium text-primary hover:underline ml-1" href="#">Submit Access Request</a>
+</p>
+</div>
+</div>
+<!-- System Status Indicator (Bottom right) -->
+<div class="fixed bottom-4 right-4 flex items-center bg-surface-container-highest px-3 py-1.5 rounded-full border border-outline-variant shadow-sm z-20">
+<div class="w-2 h-2 rounded-full bg-emerald-500 mr-2"></div>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase">System Operational</span>
+</div>
+<script>
+        function showMfaStep() {
+            document.getElementById('credentials-step').classList.add('hidden');
+            document.getElementById('mfa-step').classList.remove('hidden');
+            document.getElementById('mfa-code').focus();
+        }
+
+        function showCredentialsStep() {
+            document.getElementById('mfa-step').classList.add('hidden');
+            document.getElementById('credentials-step').classList.remove('hidden');
+        }
+    </script>
+</body></html>

@@ -504,7 +504,7 @@ metadata:
   name: frontend-html
   namespace: muleshield-pro-v2
 binaryData: {}
-# You can populate this ConfigMap with the contents of `frontend/index.html`
+# You can populate this ConfigMap with the contents of `ui/index.html`
 ---
 apiVersion: v1
 kind: Service

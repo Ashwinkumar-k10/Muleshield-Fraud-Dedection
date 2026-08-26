@@ -1,0 +1,398 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MuleShield PRO - STR &amp; Audit Reports</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "secondary-container": "#d5e3fd",
+                        "primary-fixed-dim": "#bec6e0",
+                        "on-error-container": "#93000a",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "surface-container": "#eceef0",
+                        "surface-container-highest": "#e0e3e5",
+                        "tertiary-container": "#0b1c30",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "on-error": "#ffffff",
+                        "background": "#f7f9fb",
+                        "on-background": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-surface": "#191c1e",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "on-tertiary-container": "#75859d",
+                        "surface-dim": "#d8dadc",
+                        "inverse-primary": "#bec6e0",
+                        "primary": "#000000",
+                        "on-secondary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "tertiary": "#000000",
+                        "inverse-surface": "#2d3133",
+                        "primary-container": "#131b2e",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-secondary-container": "#57657b",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#7c839b",
+                        "primary-fixed": "#dae2fd",
+                        "outline": "#76777d",
+                        "on-primary-fixed": "#131b2e",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary": "#515f74",
+                        "outline-variant": "#c6c6cd",
+                        "surface-container-low": "#f2f4f6",
+                        "error-container": "#ffdad6",
+                        "error": "#ba1a1a",
+                        "surface-bright": "#f7f9fb",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed": "#d3e4fe",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "on-primary": "#ffffff",
+                        "surface-tint": "#565e74",
+                        "surface-container-high": "#e6e8ea"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "table-row-height": "40px",
+                        "sidebar-width": "260px",
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "gutter": "16px"
+                    },
+                    "fontFamily": {
+                        "data-mono": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "display-lg": ["Inter"]
+                    },
+                    "fontSize": {
+                        "data-mono": ["12px", { "lineHeight": "16px", "fontWeight": "450" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.fill {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background: white;
+            }
+            .a4-page {
+                box-shadow: none;
+                margin: 0;
+                padding: 0;
+                width: auto;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md antialiased min-h-screen flex">
+<!-- SideNavBar -->
+<aside class="hidden md:flex flex-col h-full py-gutter px-unit bg-primary-container dark:bg-primary-container fixed left-0 top-0 h-full w-[260px] border-r border-outline-variant z-40">
+<div class="px-gutter mb-8 mt-4 flex items-center gap-3">
+<div class="w-8 h-8 rounded bg-primary-fixed flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-on-primary-fixed">shield</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary truncate">MuleShield PRO</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container truncate">Forensic Intelligence</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">dashboard</span>
+<span class="font-title-sm text-body-sm">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">payments</span>
+<span class="font-title-sm text-body-sm">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">hub</span>
+<span class="font-title-sm text-body-sm">Network Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">folder_shared</span>
+<span class="font-title-sm text-body-sm">Case Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">security_update_good</span>
+<span class="font-title-sm text-body-sm">Risk Engine</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform shadow-sm group" href="#">
+<span class="material-symbols-outlined fill group-hover:scale-110 transition-transform">assessment</span>
+<span class="font-title-sm text-body-sm">Reporting</span>
+</a>
+
+</nav>
+<div class="mt-auto pt-4 border-t border-on-primary-fixed-variant/20 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">settings</span>
+<span class="font-title-sm text-body-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg group" href="#">
+<span class="material-symbols-outlined group-hover:scale-110 transition-transform">help_outline</span>
+<span class="font-title-sm text-body-sm">Support</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<div class="flex-1 ml-0 md:ml-[260px] flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim text-on-surface dark:text-on-surface docked full-width top-0 sticky z-50 shadow-sm border-b border-outline-variant flex justify-between items-center w-full h-[64px] px-container-margin no-print">
+<div class="flex items-center gap-6">
+<!-- Mobile Menu Button (Hidden on Desktop) -->
+
+
+</div>
+<div class="flex items-center gap-4">
+<div class="flex items-center gap-2">
+<button class="bg-white border border-outline-variant text-primary font-title-sm text-body-sm px-4 py-1.5 rounded hover:bg-surface-container-low transition-colors shadow-sm flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]">share</span>
+                        Share with Regulator
+                    </button>
+<button class="bg-primary text-on-primary font-title-sm text-body-sm px-4 py-1.5 rounded hover:bg-primary/90 transition-colors shadow-sm flex items-center gap-2" onclick="window.print()">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                        Export PDF
+                    </button>
+</div>
+<div class="h-6 w-px bg-outline-variant mx-2"></div>
+<button class="text-on-surface-variant hover:text-primary transition-colors relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-0 right-0 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">account_circle</span>
+</button>
+</div>
+</header>
+<!-- Report Canvas -->
+<main class="flex-1 p-container-margin bg-background overflow-auto">
+<!-- A4 Wrapper for Print/Visual -->
+<div class="a4-page max-w-[1000px] mx-auto bg-surface-container-lowest border border-outline-variant rounded shadow-sm">
+<!-- Report Header -->
+<div class="p-8 border-b border-outline-variant bg-surface-bright rounded-t">
+<div class="flex justify-between items-start mb-6">
+<div>
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-error">warning</span>
+<span class="font-label-caps text-label-caps text-error bg-error-container px-2 py-0.5 rounded">SUSPICIOUS TRANSACTION REPORT (STR)</span>
+</div>
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Case #MS-2024-8932</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Generated: Oct 24, 2024 14:30 UTC</p>
+</div>
+<div class="text-right">
+<p class="font-label-caps text-label-caps text-on-surface-variant">Entity Monitored</p>
+<p class="font-title-sm text-title-sm text-primary">Nexus Logistics Ltd.</p>
+<p class="font-data-mono text-data-mono text-on-surface-variant mt-1">ID: NL-993-8472-X</p>
+</div>
+</div>
+</div>
+<!-- Main Report Body -->
+<div class="flex flex-col lg:flex-row border-b border-outline-variant">
+<!-- Left Column: Content -->
+<div class="flex-1 p-8 border-r lg:border-outline-variant">
+<!-- Executive Summary -->
+<section class="mb-10">
+<h3 class="font-title-sm text-title-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-secondary">subject</span>
+                                Executive Summary
+                            </h3>
+<div class="bg-surface-container-low p-4 rounded border border-outline-variant mb-4">
+<div class="flex items-center gap-4 mb-3">
+<div class="w-12 h-12 rounded-full bg-error-container flex items-center justify-center border-2 border-error">
+<span class="font-title-sm text-error font-bold">92</span>
+</div>
+<div>
+<p class="font-label-caps text-label-caps text-error">CRITICAL RISK ASSESSMENT</p>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Immediate regulatory filing recommended.</p>
+</div>
+</div>
+<p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                                    Entity has engaged in rapid, high-velocity transactions spanning three high-risk jurisdictions within a 48-hour window. Pattern strongly correlates with known typologies of layer-based money laundering, specifically utilizing shell entities in professional services sectors. AI models indicate a 94% confidence match to historical mule network topologies.
+                                </p>
+</div>
+</section>
+<!-- AI Explanation -->
+<section class="mb-10">
+<h3 class="font-title-sm text-title-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-secondary">psychology</span>
+                                AI Explanation (SHAP Analysis)
+                            </h3>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Contributor 1 -->
+<div class="border border-outline-variant rounded p-3 bg-surface">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-body-sm font-semibold">Velocity (Tx/Hr)</span>
+<span class="font-data-mono text-data-mono text-error">+4.2 SHAP</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-error h-1.5 rounded-full" style="width: 85%"></div>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-2">Anomaly detected in transactional speed.</p>
+</div>
+<!-- Contributor 2 -->
+<div class="border border-outline-variant rounded p-3 bg-surface">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-body-sm font-semibold">Jurisdiction Risk</span>
+<span class="font-data-mono text-data-mono text-error">+3.8 SHAP</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-error h-1.5 rounded-full" style="width: 75%"></div>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-2">Routing through sanctioned zones.</p>
+</div>
+<!-- Contributor 3 -->
+<div class="border border-outline-variant rounded p-3 bg-surface">
+<div class="flex justify-between items-center mb-2">
+<span class="font-body-sm text-body-sm font-semibold">Entity Age</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant">+1.2 SHAP</span>
+</div>
+<div class="w-full bg-surface-container-highest rounded-full h-1.5">
+<div class="bg-secondary h-1.5 rounded-full" style="width: 25%"></div>
+</div>
+<p class="font-label-caps text-label-caps text-on-surface-variant mt-2">Newly registered shell company.</p>
+</div>
+</div>
+</section>
+<!-- Transaction Log -->
+<section>
+<h3 class="font-title-sm text-title-sm text-primary mb-4 flex items-center gap-2 border-b border-outline-variant pb-2">
+<span class="material-symbols-outlined text-secondary">list_alt</span>
+                                Flagged Transaction Log
+                            </h3>
+<div class="overflow-x-auto border border-outline-variant rounded">
+<table class="w-full text-left border-collapse">
+<thead class="bg-surface-container-low font-label-caps text-label-caps text-on-surface-variant border-b border-outline-variant sticky top-0">
+<tr>
+<th class="p-2 w-[120px]">TX_ID</th>
+<th class="p-2 w-[100px]">Date/Time</th>
+<th class="p-2">Counterparty</th>
+<th class="p-2 text-right">Amount (USD)</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono divide-y divide-outline-variant bg-surface">
+<tr class="h-table-row hover:bg-surface-container-lowest">
+<td class="p-2 text-on-surface font-bold">XJ-982-1A</td>
+<td class="p-2 text-on-surface-variant">10-22 14:02</td>
+<td class="p-2 text-on-surface truncate max-w-[150px]">Global Nominees LLC</td>
+<td class="p-2 text-error text-right font-bold">$125,000.00</td>
+</tr>
+<tr class="h-table-row bg-surface-bright hover:bg-surface-container-lowest">
+<td class="p-2 text-on-surface font-bold">XJ-982-1B</td>
+<td class="p-2 text-on-surface-variant">10-22 14:15</td>
+<td class="p-2 text-on-surface truncate max-w-[150px]">Apex Holding Group</td>
+<td class="p-2 text-error text-right font-bold">$85,500.00</td>
+</tr>
+<tr class="h-table-row hover:bg-surface-container-lowest">
+<td class="p-2 text-on-surface font-bold">XJ-982-1C</td>
+<td class="p-2 text-on-surface-variant">10-23 09:44</td>
+<td class="p-2 text-on-surface truncate max-w-[150px]">Vanguard Services SA</td>
+<td class="p-2 text-error text-right font-bold">$210,000.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+<!-- Right Column: Audit Timeline -->
+<div class="w-full lg:w-[320px] bg-surface-bright p-6 border-l border-outline-variant relative">
+<h3 class="font-title-sm text-title-sm text-primary mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">timeline</span>
+                            Audit Timeline
+                        </h3>
+<div class="relative pl-6 border-l-2 border-outline-variant space-y-8">
+<!-- System Flag -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-error-container border border-error flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-error">precision_manufacturing</span>
+</div>
+<div class="mb-1">
+<span class="font-label-caps text-label-caps text-error">SYSTEM FLAG DETECTED</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant ml-2">10-23 10:05</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface bg-surface-container p-2 rounded border border-outline-variant">Velocity threshold exceeded. Automated freeze initiated.</p>
+</div>
+<!-- L1 Assignment -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-secondary-container border border-secondary flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-secondary">person</span>
+</div>
+<div class="mb-1">
+<span class="font-label-caps text-label-caps text-secondary">L1 ANALYST ASSIGNED</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant ml-2">10-23 11:30</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">Case claimed by Analyst: J. Doe (ID: 492).</p>
+</div>
+<!-- Escalation -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-surface-container-highest border border-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-primary">arrow_upward</span>
+</div>
+<div class="mb-1">
+<span class="font-label-caps text-label-caps text-primary">ESCALATED TO SENIOR INVESTIGATOR</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant ml-2">10-24 09:15</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface bg-surface p-2 rounded border border-outline-variant italic text-on-surface-variant">"Requires advanced review. Possible multi-jurisdictional shell structure."</p>
+</div>
+<!-- STR Generation -->
+<div class="relative">
+<div class="absolute -left-[35px] top-0 w-6 h-6 rounded-full bg-primary border border-primary flex items-center justify-center">
+<span class="material-symbols-outlined text-[14px] text-on-primary">description</span>
+</div>
+<div class="mb-1">
+<span class="font-label-caps text-label-caps text-primary">STR GENERATED</span>
+<span class="font-data-mono text-data-mono text-on-surface-variant ml-2">10-24 14:30</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">Report finalized by S. Inv. K. Smith.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="p-4 text-center border-t border-outline-variant bg-surface-container-lowest">
+<p class="font-data-mono text-data-mono text-on-surface-variant">MuleShield PRO Forensic Intelligence | Confidental Document | ID: MS-2024-8932</p>
+</div>
+</div>
+</main>
+</div>
+
+
+
+
+</body></html>

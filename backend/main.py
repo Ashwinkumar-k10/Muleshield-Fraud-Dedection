@@ -35,7 +35,7 @@ if Config.FLASK_ENV == "production":
 else:
     CORS(app)  # Allow wide open access for local development ease
 
-FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "ui"))
 
 # Configuration
 JWT_SECRET_KEY = Config.JWT_SECRET_KEY

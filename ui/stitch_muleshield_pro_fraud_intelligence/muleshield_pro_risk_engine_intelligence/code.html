@@ -1,0 +1,396 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>MuleShield PRO | Risk Engine Intelligence</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-primary": "#bec6e0",
+                        "on-background": "#191c1e",
+                        "error-container": "#ffdad6",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "surface-container-low": "#f2f4f6",
+                        "error": "#ba1a1a",
+                        "surface-container": "#eceef0",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "tertiary": "#000000",
+                        "surface-container-lowest": "#ffffff",
+                        "background": "#f7f9fb",
+                        "surface-tint": "#565e74",
+                        "outline": "#76777d",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "primary": "#000000",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "secondary-fixed": "#d5e3fd",
+                        "surface-bright": "#f7f9fb",
+                        "primary-fixed": "#dae2fd",
+                        "on-secondary-container": "#57657b",
+                        "on-error-container": "#93000a",
+                        "surface-container-highest": "#e0e3e5",
+                        "inverse-on-surface": "#eff1f3",
+                        "outline-variant": "#c6c6cd",
+                        "primary-container": "#131b2e",
+                        "on-primary": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "secondary-container": "#d5e3fd",
+                        "on-tertiary-container": "#75859d",
+                        "secondary": "#515f74",
+                        "surface-container-high": "#e6e8ea",
+                        "on-secondary-fixed": "#0d1c2f",
+                        "primary-fixed-dim": "#bec6e0",
+                        "inverse-surface": "#2d3133",
+                        "tertiary-container": "#0b1c30",
+                        "on-primary-container": "#7c839b",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "surface": "#f7f9fb",
+                        "surface-dim": "#d8dadc",
+                        "tertiary-fixed": "#d3e4fe",
+                        "surface-variant": "#e0e3e5"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "container-margin": "24px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "gutter": "16px",
+                        "table-row-height": "40px"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "title-sm": ["Inter"],
+                        "label-caps": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "headline-md": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "title-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "label-caps": ["11px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "700" }],
+                        "data-mono": ["12px", { "lineHeight": "16px", "fontWeight": "450" }],
+                        "headline-md": ["24px", { "lineHeight": "32px", "letterSpacing": "-0.01em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+        
+        .slider-thumb::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #000000;
+            cursor: pointer;
+            border: 2px solid #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[260px] bg-primary-container border-r border-outline-variant flex flex-col py-gutter px-unit z-40">
+<div class="mb-8 px-4 mt-4">
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">MuleShield PRO</h1>
+<p class="font-label-caps text-label-caps text-on-primary-container mt-1">Forensic Intelligence</p>
+</div>
+<div class="flex flex-col flex-1 gap-1">
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="">Overview</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span class="">Transactions</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="hub">hub</span>
+<span class="">Network Analysis</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span>
+<span class="">Case Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="security_update_good" style="font-variation-settings: 'FILL' 1;">security_update_good</span>
+<span class="">Risk Engine</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-primary-fixed-dim hover:text-on-primary hover:bg-primary-fixed-variant/20 transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="">Reporting</span>
+</a>
+
+</div>
+<div class="mt-auto flex flex-col gap-1 border-t border-primary-fixed-variant/30 pt-4">
+<a class="flex items-center gap-3 px-4 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 text-primary-fixed-dim hover:text-on-primary transition-colors font-body-sm text-body-sm rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+<span class="">Support</span>
+</a>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full h-[64px] px-container-margin ml-[260px] w-[calc(100%-260px)] bg-surface border-b border-outline-variant shadow-sm docked full-width top-0 sticky z-50">
+<div class="flex items-center gap-6">
+
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container-low">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+<img alt="Analyst Profile" class="w-8 h-8 rounded-full border border-outline-variant ml-2 object-cover" data-alt="A small, professional headshot of an intelligence analyst in a neutral grey tone environment, suitable for a corporate profile picture avatar. High quality, clear lighting, professional attire." src="https://lh3.googleusercontent.com/aida-public/AB6AXuApKWwSr1SP9dhvATi4f5iAsWEmZTTr6_hvlqXunonKXR_2Yny_ZCoUzzgaeJBWbysZHzpTHDzWUFwmyDjCyQYWNAgjqG9s9V3nojwNpz2If_To6hPW0yR0pyLF9MjQxpWmBdF6LTYmPGe37ZvugwGWmesKLvKljT9kIgzEijZ3mjZrvkbozH-4JFci4ecOz8EVhchO6FbefLs_N5CtK8M6BrCdw8IICzHjK4PYCjM6v4ffbVLM1iio">
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="ml-[260px] p-container-margin pt-6 flex flex-col gap-6">
+<!-- Header Section -->
+<div class="flex justify-between items-end mb-2">
+<div>
+<h2 class="font-display-lg text-display-lg text-primary">Risk Engine Intelligence</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Configure logic gates, tune model hyperparameters, and simulate against historical payloads.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-4 py-2 border border-outline bg-surface-container-lowest text-on-surface font-label-caps text-label-caps uppercase rounded hover:bg-surface-container-low transition-colors shadow-sm">Discard Draft</button>
+<button class="px-6 py-2 bg-primary text-on-primary font-label-caps text-label-caps uppercase rounded shadow-sm hover:bg-primary/90 transition-colors">Deploy Configuration</button>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-12 gap-6">
+<!-- Scenario Builder (Main Column) -->
+<div class="col-span-12 xl:col-span-8 flex flex-col gap-6">
+<div class="glass-panel rounded-xl p-6 relative overflow-hidden">
+<!-- Subtle background pattern -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(#000 1px, transparent 1px); background-size: 16px 16px;"></div>
+<div class="flex justify-between items-center mb-6 relative z-10">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">account_tree</span>
+<h3 class="font-title-sm text-title-sm text-primary">Scenario Builder: Mule Activity Pattern A4</h3>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-caps text-label-caps text-error">High Risk Priority</span>
+</div>
+</div>
+<!-- Logic Flow -->
+<div class="flex flex-col gap-4 relative z-10">
+<!-- Block 1 -->
+<div class="border border-outline-variant bg-surface-container-lowest rounded-lg p-4 shadow-sm flex items-start gap-4">
+<div class="mt-1 bg-surface-container-high p-1.5 rounded">
+<span class="font-data-mono text-data-mono text-on-surface">AND</span>
+</div>
+<div class="flex-1 grid grid-cols-3 gap-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Parameter</label>
+<select class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9">
+<option>Transaction Amount (USD)</option>
+<option>Velocity (24h)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Operator</label>
+<select class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9">
+<option>Greater Than (&gt;)</option>
+<option>Less Than (&lt;)</option>
+</select>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Value</label>
+<input class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9 font-data-mono" type="number" value="9500">
+</div>
+</div>
+<button class="p-2 text-outline hover:text-error transition-colors mt-5"><span class="material-symbols-outlined">delete</span></button>
+</div>
+<!-- Connector -->
+<div class="w-0.5 h-4 bg-outline-variant ml-8"></div>
+<!-- Block 2 -->
+<div class="border border-outline-variant bg-surface-container-lowest rounded-lg p-4 shadow-sm flex items-start gap-4">
+<div class="mt-1 bg-surface-container-high p-1.5 rounded">
+<span class="font-data-mono text-data-mono text-on-surface">AND</span>
+</div>
+<div class="flex-1 grid grid-cols-3 gap-4">
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Parameter</label>
+<select class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9">
+<option>Jurisdiction Match</option>
+</select>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">Operator</label>
+<select class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9">
+<option>Is Not In</option>
+</select>
+</div>
+<div>
+<label class="block font-label-caps text-label-caps text-on-surface-variant mb-1">List</label>
+<select class="w-full bg-surface-container-low border-outline-variant text-body-sm font-body-sm rounded-md focus:border-primary focus:ring-1 focus:ring-primary h-9">
+<option>Watchlist_Tier_1</option>
+</select>
+</div>
+</div>
+<button class="p-2 text-outline hover:text-error transition-colors mt-5"><span class="material-symbols-outlined">delete</span></button>
+</div>
+<button class="flex items-center justify-center gap-2 py-3 border-2 border-dashed border-outline-variant rounded-lg text-on-surface-variant hover:text-primary hover:border-primary transition-colors bg-surface-container-lowest/50 mt-2 font-body-sm font-semibold">
+<span class="material-symbols-outlined text-[18px]">add</span> Add Logic Gate
+                        </button>
+</div>
+</div>
+<!-- Live Simulation Panel -->
+<div class="glass-panel rounded-xl p-0 flex flex-col">
+<div class="px-6 py-4 border-b border-outline-variant flex justify-between items-center bg-surface-container-lowest/80 rounded-t-xl">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">play_circle</span>
+<h3 class="font-title-sm text-title-sm text-primary">Live Simulation</h3>
+</div>
+<div class="flex gap-2">
+<select class="bg-surface-container-low border-none text-body-sm font-body-sm rounded text-on-surface h-8 py-0 focus:ring-0">
+<option>Dataset: Q3 2023 Historical</option>
+<option>Dataset: Q4 2023 Historical</option>
+</select>
+<button class="bg-primary text-on-primary px-4 h-8 rounded font-label-caps text-label-caps hover:bg-primary/90 transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">refresh</span> Run
+                            </button>
+</div>
+</div>
+<div class="p-0 overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low border-b border-outline-variant">
+<th class="py-2 px-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Entity ID</th>
+<th class="py-2 px-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Amount</th>
+<th class="py-2 px-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Velocity</th>
+<th class="py-2 px-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Rule Outcome</th>
+<th class="py-2 px-4 font-label-caps text-label-caps text-on-surface-variant font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono">
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors h-table-row-height">
+<td class="py-2 px-4 text-on-surface">E-993821</td>
+<td class="py-2 px-4">$9,850.00</td>
+<td class="py-2 px-4">4/24h</td>
+<td class="py-2 px-4">
+<div class="inline-flex items-center px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-caps text-[10px]">Flagged</div>
+</td>
+<td class="py-2 px-4 text-primary hover:underline cursor-pointer">Trace</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors h-table-row-height bg-surface-container-lowest/50">
+<td class="py-2 px-4 text-on-surface">E-110293</td>
+<td class="py-2 px-4">$12,000.00</td>
+<td class="py-2 px-4">1/24h</td>
+<td class="py-2 px-4">
+<div class="inline-flex items-center px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-caps text-[10px]">Pass</div>
+</td>
+<td class="py-2 px-4 text-primary hover:underline cursor-pointer">Trace</td>
+</tr>
+<tr class="border-b border-outline-variant/50 hover:bg-surface-container-lowest transition-colors h-table-row-height">
+<td class="py-2 px-4 text-on-surface">E-774829</td>
+<td class="py-2 px-4">$9,990.00</td>
+<td class="py-2 px-4">7/24h</td>
+<td class="py-2 px-4">
+<div class="inline-flex items-center px-2 py-0.5 rounded bg-error-container text-on-error-container font-label-caps text-[10px]">Flagged</div>
+</td>
+<td class="py-2 px-4 text-primary hover:underline cursor-pointer">Trace</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Metrics Column -->
+<div class="col-span-12 xl:col-span-4 flex flex-col gap-6">
+<!-- Model Performance Card -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-6">
+<div class="flex items-center gap-2 border-b border-outline-variant pb-4">
+<span class="material-symbols-outlined text-primary">donut_large</span>
+<h3 class="font-title-sm text-title-sm text-primary">Model Performance (XGBoost)</h3>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant shadow-sm flex flex-col items-center justify-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">Precision</span>
+<span class="font-display-lg text-[28px] font-bold text-primary">94.2%</span>
+<span class="text-[10px] text-green-600 font-semibold flex items-center mt-1"><span class="material-symbols-outlined text-[12px]">arrow_upward</span> 1.2%</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-lg border border-outline-variant shadow-sm flex flex-col items-center justify-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant mb-1">Recall</span>
+<span class="font-display-lg text-[28px] font-bold text-primary">88.7%</span>
+<span class="text-[10px] text-red-600 font-semibold flex items-center mt-1"><span class="material-symbols-outlined text-[12px]">arrow_downward</span> 0.4%</span>
+</div>
+</div>
+<div class="bg-primary-container text-on-primary-container p-4 rounded-lg flex flex-col items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container to-secondary-fixed/20 z-0"></div>
+<div class="relative z-10 flex flex-col items-center">
+<span class="font-label-caps text-label-caps text-on-primary-container/80 mb-1">F1 Score</span>
+<span class="font-display-lg text-[32px] font-bold text-on-primary">0.914</span>
+<div class="w-full bg-on-primary-container/20 h-1.5 rounded-full mt-3 overflow-hidden">
+<div class="bg-on-primary h-full rounded-full w-[91.4%]"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Tuning Sliders -->
+<div class="glass-panel rounded-xl p-6 flex flex-col gap-5">
+<div class="flex items-center gap-2 border-b border-outline-variant pb-3 mb-1">
+<span class="material-symbols-outlined text-primary">tune</span>
+<h3 class="font-title-sm text-title-sm text-primary">Threshold Tuning</h3>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<label class="font-label-caps text-label-caps text-on-surface">Confidence Threshold</label>
+<span class="font-data-mono text-data-mono font-bold text-primary bg-surface-container p-1 rounded">0.85</span>
+</div>
+<input class="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer slider-thumb" max="1" min="0" step="0.01" type="range" value="0.85">
+<div class="flex justify-between text-[10px] text-on-surface-variant mt-1 font-data-mono">
+<span class="">0.0</span>
+<span class="">1.0</span>
+</div>
+</div>
+<div>
+<div class="flex justify-between items-end mb-2">
+<label class="font-label-caps text-label-caps text-on-surface">False Positive Tolerance</label>
+<span class="font-data-mono text-data-mono font-bold text-primary bg-surface-container p-1 rounded">2.5%</span>
+</div>
+<input class="w-full h-1 bg-outline-variant rounded-lg appearance-none cursor-pointer slider-thumb" max="10" min="0" step="0.1" type="range" value="2.5">
+</div>
+<div class="mt-2 p-3 bg-surface-container-low rounded border-l-2 border-primary text-body-sm font-body-sm text-on-surface-variant">
+                        Lowering tolerance will increase False Positives by an estimated <strong class="text-primary font-semibold">12%</strong> on current dataset.
+                    </div>
+</div>
+</div>
+</div>
+</main>
+
+
+</body></html>

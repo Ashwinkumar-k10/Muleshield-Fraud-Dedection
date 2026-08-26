@@ -425,7 +425,7 @@ metadata:
   name: frontend-html
   namespace: muleshield-pro-v2
 binaryData: {}
-# Populate with the contents of frontend/index.html
+# Populate with the contents of ui/index.html
 ---
 apiVersion: v1
 kind: Service

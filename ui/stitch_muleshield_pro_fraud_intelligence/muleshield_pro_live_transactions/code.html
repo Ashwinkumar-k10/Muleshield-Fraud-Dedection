@@ -1,0 +1,314 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Live Transactions - MuleShield PRO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@450&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary-fixed-dim": "#bec6e0",
+                        "tertiary-fixed": "#d3e4fe",
+                        "secondary-fixed": "#d5e3fd",
+                        "on-surface": "#191c1e",
+                        "on-surface-variant": "#45464d",
+                        "on-tertiary-container": "#75859d",
+                        "outline-variant": "#c6c6cd",
+                        "primary-fixed": "#dae2fd",
+                        "secondary-fixed-dim": "#b9c7e0",
+                        "primary": "#000000",
+                        "on-primary-container": "#7c839b",
+                        "surface-tint": "#565e74",
+                        "tertiary-fixed-dim": "#b7c8e1",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-primary-fixed-variant": "#3f465c",
+                        "error-container": "#ffdad6",
+                        "primary-container": "#131b2e",
+                        "secondary": "#515f74",
+                        "on-background": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "on-tertiary-fixed": "#0b1c30",
+                        "on-secondary-fixed-variant": "#3a485c",
+                        "inverse-surface": "#2d3133",
+                        "inverse-on-surface": "#eff1f3",
+                        "on-primary": "#ffffff",
+                        "surface-variant": "#e0e3e5",
+                        "on-secondary": "#ffffff",
+                        "outline": "#76777d",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#d5e3fd",
+                        "on-tertiary-fixed-variant": "#38485d",
+                        "surface-container-high": "#e6e8ea",
+                        "tertiary": "#000000",
+                        "inverse-primary": "#bec6e0",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed": "#131b2e",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-low": "#f2f4f6",
+                        "surface-dim": "#d8dadc",
+                        "background": "#f7f9fb",
+                        "tertiary-container": "#0b1c30",
+                        "on-secondary-container": "#57657b",
+                        "surface-container": "#eceef0",
+                        "surface": "#f7f9fb",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed": "#0d1c2f"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "table-row-height": "40px",
+                        "gutter": "16px",
+                        "unit": "4px",
+                        "sidebar-width": "260px",
+                        "container-margin": "24px"
+                    },
+                    fontFamily: {
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "data-mono": ["JetBrains Mono"],
+                        "title-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "body-sm": ["Inter"]
+                    },
+                    fontSize: {
+                        "label-caps": ["11px", { lineHeight: "16px", letterSpacing: "0.05em", fontWeight: "700" }],
+                        "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+                        "display-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
+                        "data-mono": ["12px", { lineHeight: "16px", fontWeight: "450" }],
+                        "title-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "body-sm": ["13px", { lineHeight: "18px", fontWeight: "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .table-striped tbody tr:nth-child(even) { background-color: #ffffff; }
+        .table-striped tbody tr:nth-child(odd) { background-color: #f8fafc; }
+        .table-header-sticky th { position: sticky; top: 0; z-index: 10; background-color: #f2f4f6; }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body-md antialiased flex">
+<!-- SideNavBar -->
+<nav class="hidden md:flex bg-primary-container dark:bg-primary-container fixed left-0 top-0 h-full w-[260px] flex-col py-gutter px-unit border-r border-outline-variant z-40">
+<div class="mb-8 px-4 flex items-center space-x-3">
+<div class="w-8 h-8 rounded-lg bg-primary-fixed flex items-center justify-center overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A minimalist logo for a forensic financial intelligence product, 'MuleShield', featuring a modern shield or geometric grid icon. Clean corporate aesthetic, light mode colors." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEuwFewqav8j1Oe1OnLR_BoqeQ3Ej3SeHzjasqKGNIozJwyxKI3i4E58q6mcWcIkpEuCIiyxPN9HsvKrnf5AYDOTP0xDgSUtYCSad-N25IVE6x4G9-eSDBb1ALubSOlkIOjZp-6_440DLcLel8mxmiEH1n2CSKPixPVk1GIG3c6osDYU6PqBbzbe3SkeEKzpGRshDwg8Rs-tJS-Wg0qnXojARebapmv-6w03Lc_ODTpS70FHrolJny">
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-bold text-on-primary">MuleShield PRO</h1>
+<p class="font-label-caps text-label-caps text-primary-fixed-dim">Forensic Intelligence</p>
+</div>
+</div>
+<ul class="flex-1 space-y-1">
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="dashboard">dashboard</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Overview</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 bg-secondary-fixed-dim text-on-secondary-fixed font-bold rounded-lg scale-[0.98] transition-transform" href="#"><span class="material-symbols-outlined" data-icon="payments">payments</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Transactions</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="hub">hub</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Network Analysis</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="folder_shared">folder_shared</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Case Management</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="security_update_good">security_update_good</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Risk Engine</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="assessment">assessment</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Reporting</span></a></li>
+
+</ul>
+<div class="mt-auto border-t border-outline-variant/30 pt-4">
+<ul class="space-y-1">
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="settings">settings</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Settings</span></a></li>
+<li class=""><a class="flex items-center px-4 py-2 space-x-3 text-primary-fixed-dim hover:text-on-primary transition-colors hover:bg-primary-fixed-variant/20 rounded-lg" href="#"><span class="material-symbols-outlined" data-icon="help_outline">help_outline</span><span class="font-body-sm text-body-sm font-label-caps text-label-caps">Support</span></a></li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-0 md:ml-[260px] min-h-screen flex flex-col bg-background w-full">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-surface-dim docked full-width top-0 sticky z-50 border-b border-outline-variant shadow-sm flex justify-between items-center w-full h-[64px] px-container-margin">
+<div class="flex items-center space-x-6">
+<!-- Search -->
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 transform -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+<input class="w-full pl-9 pr-4 py-1.5 bg-surface-container-low border border-outline-variant rounded-lg font-body-sm text-body-sm focus:outline-none focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/10 transition-shadow" placeholder="Search Transactions..." type="text">
+</div>
+<!-- Nav Links -->
+
+</div>
+<div class="flex items-center space-x-4">
+<button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container-low rounded-full transition-colors relative">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+<span class="absolute top-1.5 right-1.5 w-2 h-2 bg-error rounded-full"></span>
+</button>
+<button class="flex items-center space-x-2 p-1 hover:bg-surface-container-low rounded-full transition-colors">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-variant border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A small profile picture of a professional investigator, neutral corporate setting, light gray background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuB4eM2eEf__ACHXRS_jBZM93l_Rg5vDGKFDI9oPFCPPOZ5aYEmmOoV4VCKTlRiqWVsQfmdXBcFwSdKFwQQhSk8WjTZ9Dy5izDTfrA6pR4yIdrvY87SRDe4Lc3DwpKQOmlRXBtfy1cx-sikaR2m4pV_Z79GqI79eNp5dxXZWUuZPqxZjJYpk45g5L7FpFt9_f3rWHL2ak7aAM7Q2p9UIAeFK1eTPxMIi6oktlyAjp-tx8OldsXNxlXlk">
+</div>
+</button>
+</div>
+</header>
+<!-- Canvas / Workspace -->
+<main class="flex-1 p-container-margin overflow-auto">
+<!-- Filters Toolbar -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 mb-6 shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
+<div class="flex flex-wrap gap-4 items-center">
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Date Range</label>
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-body-sm focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/10">
+<option>Last 24 Hours</option>
+<option>Last 7 Days</option>
+<option>Last 30 Days</option>
+<option>Custom Range</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Risk Level</label>
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-body-sm focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/10">
+<option>All Levels</option>
+<option>High (80-100)</option>
+<option>Medium (50-79)</option>
+<option>Low (0-49)</option>
+</select>
+</div>
+<div class="flex flex-col">
+<label class="font-label-caps text-label-caps text-on-surface-variant mb-1">Account Type</label>
+<select class="bg-surface border border-outline-variant rounded-lg px-3 py-1.5 font-body-sm text-body-sm focus:border-[#3b82f6] focus:ring-2 focus:ring-[#3b82f6]/10">
+<option>All Accounts</option>
+<option>Retail</option>
+<option>Corporate</option>
+<option>Offshore</option>
+</select>
+</div>
+</div>
+<div class="flex items-center space-x-2">
+<button class="bg-surface border border-outline-variant text-on-surface px-4 py-2 rounded-lg font-label-caps text-label-caps hover:bg-surface-container-low transition-colors shadow-sm">Export CSV</button>
+<button class="bg-primary text-on-primary px-4 py-2 rounded-lg font-label-caps text-label-caps hover:bg-primary/90 transition-colors shadow-sm shadow-inner">Refresh Feed</button>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-sm flex flex-col" style="height: calc(100vh - 240px);">
+<div class="px-4 py-3 border-b border-outline-variant bg-surface-container-low flex justify-between items-center">
+<h2 class="font-title-sm text-title-sm">Live Transactions Stream</h2>
+<span class="bg-primary-fixed-dim text-on-primary-fixed px-2 py-0.5 rounded-full font-label-caps text-label-caps">14,203 Total</span>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse table-striped table-header-sticky">
+<thead>
+<tr class="border-b border-outline-variant font-label-caps text-label-caps text-on-surface-variant">
+<th class="px-4 py-2">Timestamp (UTC)</th>
+<th class="px-4 py-2">Transaction ID</th>
+<th class="px-4 py-2">Account</th>
+<th class="px-4 py-2 text-right">Amount</th>
+<th class="px-4 py-2">Dir</th>
+<th class="px-4 py-2">Counterparty</th>
+<th class="px-4 py-2">Risk</th>
+<th class="px-4 py-2">Status</th>
+<th class="px-4 py-2 text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="font-data-mono text-data-mono">
+<!-- Row 1: High Risk -->
+<tr class="border-b border-outline-variant/50 h-[40px] hover:bg-surface-container-low/50">
+<td class="px-4 py-1">2023-10-27 14:32:01</td>
+<td class="px-4 py-1 text-on-tertiary-container">TXN-8892-ALPHA</td>
+<td class="px-4 py-1">****9832</td>
+<td class="px-4 py-1 text-right font-medium">$450,000.00</td>
+<td class="px-4 py-1"><span class="material-symbols-outlined text-[16px] text-error">arrow_outward</span></td>
+<td class="px-4 py-1 truncate max-w-[120px]">Shell Holdings LLC</td>
+<td class="px-4 py-1">
+<div class="flex items-center space-x-2">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 w-16">
+<div class="bg-error h-1.5 rounded-full" style="width: 92%"></div>
+</div>
+<span class="text-error font-bold">92</span>
+</div>
+</td>
+<td class="px-4 py-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-error-container text-on-error-container border border-error/20">
+<span class="w-1.5 h-1.5 rounded-full bg-error mr-1.5"></span>Flagged
+                                    </span>
+</td>
+<td class="px-4 py-1 text-right">
+<button class="text-primary hover:text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded hover:bg-surface-container">Details</button>
+</td>
+</tr>
+<!-- Row 2: Medium Risk -->
+<tr class="border-b border-outline-variant/50 h-[40px] hover:bg-surface-container-low/50">
+<td class="px-4 py-1">2023-10-27 14:31:45</td>
+<td class="px-4 py-1 text-on-tertiary-container">TXN-8891-BETA</td>
+<td class="px-4 py-1">****1124</td>
+<td class="px-4 py-1 text-right">$12,500.00</td>
+<td class="px-4 py-1"><span class="material-symbols-outlined text-[16px] text-primary-fixed-dim">arrow_downward</span></td>
+<td class="px-4 py-1 truncate max-w-[120px]">CryptoX Exchange</td>
+<td class="px-4 py-1">
+<div class="flex items-center space-x-2">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 w-16">
+<div class="bg-[#f59e0b] h-1.5 rounded-full" style="width: 65%"></div>
+</div>
+<span class="text-[#d97706] font-bold">65</span>
+</div>
+</td>
+<td class="px-4 py-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-surface-container-high text-on-surface-variant border border-outline-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-[#f59e0b] mr-1.5"></span>Pending
+                                    </span>
+</td>
+<td class="px-4 py-1 text-right">
+<button class="text-primary hover:text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded hover:bg-surface-container">Details</button>
+</td>
+</tr>
+<!-- Row 3: Low Risk -->
+<tr class="border-b border-outline-variant/50 h-[40px] hover:bg-surface-container-low/50">
+<td class="px-4 py-1">2023-10-27 14:30:12</td>
+<td class="px-4 py-1 text-on-tertiary-container">TXN-8890-GAMMA</td>
+<td class="px-4 py-1">****5541</td>
+<td class="px-4 py-1 text-right">$3,200.50</td>
+<td class="px-4 py-1"><span class="material-symbols-outlined text-[16px] text-error">arrow_outward</span></td>
+<td class="px-4 py-1 truncate max-w-[120px]">Acme Corp Payroll</td>
+<td class="px-4 py-1">
+<div class="flex items-center space-x-2">
+<div class="w-full bg-surface-container-highest rounded-full h-1.5 w-16">
+<div class="bg-[#10b981] h-1.5 rounded-full" style="width: 12%"></div>
+</div>
+<span class="text-[#059669] font-bold">12</span>
+</div>
+</td>
+<td class="px-4 py-1">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide uppercase bg-[#d1fae5] text-[#065f46] border border-[#10b981]/20">
+<span class="w-1.5 h-1.5 rounded-full bg-[#10b981] mr-1.5"></span>Cleared
+                                    </span>
+</td>
+<td class="px-4 py-1 text-right">
+<button class="text-primary hover:text-on-surface-variant font-label-caps text-label-caps px-2 py-1 rounded hover:bg-surface-container">Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination -->
+<div class="px-4 py-2 border-t border-outline-variant bg-surface-container-lowest flex justify-between items-center text-body-sm font-body-sm text-on-surface-variant">
+<span class="">Showing 1-40 of 14,203</span>
+<div class="flex space-x-1">
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low disabled:opacity-50"><span class="material-symbols-outlined text-[18px] align-middle">chevron_left</span></button>
+<button class="px-3 py-1 border border-outline-variant rounded bg-primary-fixed-dim text-on-primary-fixed">1</button>
+<button class="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container-low">2</button>
+<button class="px-3 py-1 border border-outline-variant rounded hover:bg-surface-container-low">3</button>
+<span class="px-2 py-1">...</span>
+<button class="px-2 py-1 border border-outline-variant rounded hover:bg-surface-container-low"><span class="material-symbols-outlined text-[18px] align-middle">chevron_right</span></button>
+</div>
+</div>
+</div>
+</main>
+</div>
+
+
+
+
+</body></html>
