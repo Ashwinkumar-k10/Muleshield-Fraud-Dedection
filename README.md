@@ -1,14 +1,48 @@
 # MuleShield PRO — Enterprise AI/ML Mule Account & Fraud Layering Detection Platform
 **PSB CyberShield Grand Finale 2026 Submission**
 
-[![Python 3.8+](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue.svg)](https://www.python.org/)
 [![XGBoost Champion](https://img.shields.io/badge/Model-XGBoost%20Classifier-emerald.svg)](modeling/mule_shield_model.json)
 [![Validation Precision](https://img.shields.io/badge/Validation%20Precision-100%25-brightgreen.svg)](docs/12_MODEL_EVALUATION.md)
 [![PR-AUC CV](https://img.shields.io/badge/PR--AUC-0.8807%20%C2%B1%200.0403-gold.svg)](docs/11_VALIDATION_STRATEGY.md)
-[![Regulatory Alignment](https://img.shields.io/badge/Compliance-PMLA%20Sec%2012%20%7C%20RBI-blueviolet.svg)](docs/27_SECURITY_AND_COMPLIANCE.md)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Kubernetes Ready](https://img.shields.io/badge/K8s-Deployment--Ready-blue.svg)](docs/V2_KUBERNETES.md)
+[![Security Hardened](https://img.shields.io/badge/Security-Hardened--scrypt-orange.svg)](docs/V2_SECURITY.md)
 
 > **Executive Summary:** MuleShield PRO is an explainable AI-powered financial risk engine engineered specifically for Public Sector Banks (PSBs) to detect mule accounts, halt fraudulent fund-layering syndicates, and automate FIU-IND regulatory reporting in real time. Built upon an uncompromised, zero-leakage XGBoost classifier ($0.8807 \pm 0.0403$ PR-AUC across 5-Fold Group CV), MuleShield PRO delivers **100% Precision on validation folds** to eliminate false debit locks on legitimate banking customers while achieving rapid operational response.
+
+---
+
+## 🗺️ V2 Microservices & Deployment Architecture
+
+MuleShield PRO has transitioned from a single monolithic local server to a fully decoupled microservices architecture prepared for Kubernetes scaling.
+
+```
+                                 MULESHIELD PRO V2 ARCHITECTURE
+                                 
+      [ Next.js Frontend ] ◄────────────────────────────────────────┐
+      │  (Port 3000)       │                                        │
+      └─────────┬──────────┘                                        │
+                │                                                   │
+                ▼                                                   ▼
+     ┌──────────────────────┐   Role-Based Authorization   ┌────────────────┐
+     │  API Gateway (Flask) │ ───────────────────────────► │  Auth Service  │
+     │  (Port 8000)         │   (Analyst/Investigator/etc)│  (JWT + scrypt)│
+     └────┬────┬────┬───────┘                              └────────────────┘
+          │    │    │
+          │    │    └─────────────────────────┐
+          ▼    ▼                              ▼
+     ┌──────────────┐ ┌────────────────┐ ┌───────────────────┐
+     │ ML Inference │ │ Graph Database │ │ Reporting Service │
+     │ Service (Pod)│ │ Service (Pod)  │ │ Service (Pod)     │
+     │ (Port 8080)  │ │ (Port 8081)    │ │ (Port 8082)      │
+     └────┬─────────┘ └───────┬────────┘ └────────┬──────────┘
+          │                   │                   │
+          ▼                   ▼                   ▼
+    ┌───────────┐       ┌───────────┐       ┌───────────┐
+    │  XGBoost  │       │ MuleGraph │       │ ReportLab │
+    │ Classifier│       │ (Topology)│       │ PDF Engine│
+    └───────────┘       └───────────┘       └───────────┘
+```
 
 ---
 
@@ -16,122 +50,44 @@
 
 | Resource Section | Direct Link | Key Technical Highlights |
 | :--- | :--- | :--- |
-| **Master Documentation Package** | [`docs/README.md`](docs/README.md) | 32 comprehensive architectural manuals & guides |
-| **Final Technical Report** | [`report/final_report.md`](report/final_report.md) | 6-section solution paper & forensic leak audit |
-| **Internal Review Committee Audit** | [`report/internal_technical_review_audit.md`](report/internal_technical_review_audit.md) | 17-stage MLOps, MLDD & banking audit matrix |
-| **Architectural Deep-Dive** | [`report/production_readiness_architectural_audit.md`](report/production_readiness_architectural_audit.md) | System data-flow & API component mapping |
-| **Pre-Submission Integrity Audit** | [`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md) | 14-point pre-submission pass/fail verification |
+| **V2 Release Index** | [`docs/V2_RELEASE.md`](docs/V2_RELEASE.md) | Release status categorizations (Implemented, Experimental, Simulated, Future). |
+| **V2 System Validation** | [`docs/V2_SYSTEM_VALIDATION.md`](docs/V2_SYSTEM_VALIDATION.md) | Comprehensive integration check verification metrics. |
+| **V2 Kubernetes Manifests** | [`docs/V2_KUBERNETES.md`](docs/V2_KUBERNETES.md) | Cluster setup, service specifications, ConfigMaps, HPAs, and rollbacks. |
+| **V2 Security Controls** | [`docs/V2_SECURITY.md`](docs/V2_SECURITY.md) | Details rate-limiting, CORS setup, scrypt password hashing, and exception masking. |
+| **Master Documentation Package** | [`docs/README.md`](docs/README.md) | 32 comprehensive architectural manuals & guides. |
+| **Final Technical Report** | [`report/final_report.md`](report/final_report.md) | 6-section solution paper & forensic leak audit. |
 
 ---
 
-## Key Capabilities & Banking Innovations
-
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────┐
-│                              MULESHIELD PRO PLATFORM FEATURES                           │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Core Engine Feature           │ Technical Implementation & Impact                       │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Zero-Leakage ML Pipeline      │ Purged all 12 post-investigation resolution flags &     │
-│                               │ 2 date proxies to guarantee true generalization.        │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Stratified Group K-Fold CV    │ Clustered 6,118 near-duplicate account groups to prevent│
-│                               │ duplicate data leakage between train & test folds.     │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Precision-Calibrated Locking  │ Calibrated threshold (0.9899) guarantees 100% Precision │
-│                               │ on validation folds, preventing false debit freezes.    │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ TreeSHAP Explainability       │ Dynamically maps raw feature IDs (F994, F3598, F1319) to │
-│                               │ domain-mapped anomaly drivers for compliance analysts.   │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Automated STR Draft Generator │ Instant generation of legal-grade FIU-IND Suspicious     │
-│                               │ Transaction Reports per PMLA Section 12 guidelines.      │
-├───────────────────────────────┼─────────────────────────────────────────────────────────┤
-│ Single-Page Analyst Dashboard │ 5-tab responsive UI (Queue, Sandbox, Mule Ring,         │
-│                               │ Regulatory Intelligence, and Audit Trail).              │
-└───────────────────────────────┴─────────────────────────────────────────────────────────┘
-```
-
----
-
-## System Architecture & Data-Flow Pipeline
-
-```
-                                MULESHIELD PRO SYSTEM ARCHITECTURE
-                                
-  RAW BANK TRANSACTIONS           SANITIZATION & GROUP CV          CHAMPION XGBoost MODEL
- ┌─────────────────────┐         ┌────────────────────────┐         ┌────────────────────┐
- │  data/data_copy.csv │ ──────► │ Purge 12 Leakage Flags │ ──────► │ modeling/          │
- │ (9,082 Account Rows)│         │ Group CV (6,118 Folds) │         │ mule_shield_model  │
- └─────────────────────┘         └────────────────────────┘         └─────────┬──────────┘
-                                                                              │
-                                                                       Predict Proba
-                                                                              │
-  FRONTEND ANALYST UI             FLASK REST API BACKEND                       │
- ┌─────────────────────┐         ┌────────────────────────┐                   │
- │  frontend/          │ ◄─────► │  backend/main.py       │ ◄──────────────────┘
- │  index.html         │  JSON   │  backend/risk_engine   │   Threshold: 0.9899
- │  (5 Interactive Tabs│  APIs   │  backend/db.py         │   (Calibrated Decision)
- └─────────────────────┘         └────────────────────────┘
-```
-
----
-
-## ML Benchmark & Model Selection Matrix
-
-To select the champion model, three architectures were evaluated across identical **5-Fold Stratified Group K-Fold Cross-Validation** splits ($9,082$ accounts, $6,118$ distinct clusters):
-
-| Model Architecture | PR-AUC (Mean ± Std) | Precision (Val) | Recall (Val) | F1-Score (Val) | Status |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **XGBoost Classifier (CHAMPION)** | **`0.8807 ± 0.0403`** | **`1.0000`** | **`0.6164`** | **`0.7586`** | **SELECTED CHAMPION** |
-| **Random Forest Classifier** | `0.7845 ± 0.1001` | `0.9770` | `0.4033` | `0.5539` | Baseline Rejected |
-| **Logistic Regression** | `0.6652 ± 0.1035` | `0.7058` | `0.6037` | `0.6447` | Baseline Rejected |
-
-### Why XGBoost Won:
-1. **+9.62% Higher PR-AUC:** Superior handling of high feature dimensionality (6,820 aligned features).
-2. **Zero False Positives:** Achieves **100.00% Precision** at decision threshold `0.9899`, ensuring legitimate accounts are never incorrectly locked.
-3. **Regularized Shallow Trees:** Tree depth constrained to `max_depth=3` with L1 (`0.1`) and L2 (`1.0`) regularization to prevent leaf memorization on unseen validation data.
-
----
-
-## Domain-Mapped TreeSHAP Anomaly Drivers
-
-MuleShield PRO translates abstract anonymized dataset features into clear, human-understandable banking anomaly signals for compliance officers:
-
-```
-┌───────────────────────────────────────────────────────────────────────────────────────────┐
-│                             TOP SHAP ANOMALY DRIVERS MAP                                  │
-├──────────────┬───────────────────────────────────────────┬────────────────────────────────┤
-│ Feature ID   │ Business / Domain Description             │ Behavioral Fraud Signal        │
-├──────────────┼───────────────────────────────────────────┼────────────────────────────────┤
-│ F994         │ Max UPI Transaction Velocity (7D)         │ Rapid high-frequency UPI       │
-│              │                                           │ inflow spikes.                 │
-│ F3598        │ Customer-Induced Non-Cash Deviation (14D) │ Sudden deviation from customer │
-│              │                                           │ transaction baseline.          │
-│ F1813        │ Non-Cash Cumulative Balance Turnover (31D)│ Pass-through turnover holding  │
-│              │                                           │ typical of transient accounts. │
-│ F1319        │ Outflow / Inflow Balance Spread Ratio     │ Outflow/Inflow ≈ 1.0 (Rapid    │
-│              │                                           │ balance draining).             │
-│ BANK_FE_...  │ Cash-to-UPI Debit Ratio (Derived)         │ Immediate ATM cash withdrawal  │
-│              │                                           │ following UPI deposit.         │
-└──────────────┴───────────────────────────────────────────┴────────────────────────────────┘
-```
+## 🔒 Security Hardening (V2 Updates)
+To meet enterprise public sector banking requirements, the platform has been hardened against common security vulnerabilities:
+1. **Cryptographically Secure Passwords:** Upgraded plain SHA-256 storage to Werkzeug's `scrypt`/`pbkdf2` dynamic salting hashes (`generate_password_hash` / `check_password_hash`).
+2. **Access Security (RBAC):** Prevents Privilege Escalation by restricting public signup `/api/auth/signup` to non-privileged roles (`ANALYST` or `VIEWER`). Administrative roles must be added via `/api/admin/users` by an authorized admin.
+3. **Auth Rate Limiting:** Implemented an in-memory client IP rate limiter (10 requests per minute) on sensitive auth endpoints to block automated brute-force attacks.
+4. **CORS Origin Control:** Replaced wildcard `*` CORS settings across all gateways and services with strict environment-variable whitelist restrictions.
+5. **No Exception Disclosures:** Raw database exception stack traces are suppressed in production mode HTTP 500 responses and replaced with generic, secure notifications.
 
 ---
 
 ## Quick Start & Execution Guide
 
-### 1. Launch the Live REST API & Analyst Dashboard
+### 1. Launch with Docker Compose
+To spin up the entire microservices stack (API Gateway, ML Inference, Graph Engine, Reporting, Frontend, Postgres, and Kafka stub):
 ```bash
-python backend/main.py
+docker-compose up --build
 ```
-Open your browser and navigate to **`http://localhost:8000`** to interact with the full 5-tab Analyst Dashboard.
+* Access the main API gateway at `http://localhost:8000`.
+* Access the Next.js Frontend at `http://localhost:3000`.
 
-### 2. Run Root CLI Model Inference
+### 2. Deploy to Kubernetes
+Configure your target cluster credentials and apply the combined manifest file:
 ```bash
-python run_our_model.py
+kubectl apply -f k8s/all.yaml
 ```
-Evaluates all 9,082 accounts and generates a risk summary table in terminal and saved CSV output.
+Verify pod readiness:
+```bash
+kubectl get pods -n muleshield-pro-v2
+```
 
 ---
 
@@ -140,56 +96,35 @@ Evaluates all 9,082 accounts and generates a risk summary table in terminal and 
 ```text
 MuleShield-Fraud-Detection/
 │
-├── frontend/                      <-- Presentation Layer (Analyst UI)
-│   └── index.html                 <-- Single-page 5-tab dashboard UI
+├── frontend/                      <-- Next.js Frontend Application
+│   ├── app/                       <-- Dashboard tabs and layout
+│   └── components/                <-- UI Nav, Float Copilot, and Vis.js Graph
 │
-├── backend/                       <-- Application Server Layer
-│   ├── main.py                    <-- Flask REST API host (port 8000)
-│   ├── risk_engine.py             <-- Real-time prediction engine
-│   ├── db.py                      <-- In-memory case index
-│   └── storage/                   <-- Persisted FIU-IND STR drafts
+├── backend/                       <-- Flask REST API Gateway & Microservices
+│   ├── main.py                    <-- API Gateway host (port 8000)
+│   ├── inference_service.py       <-- Decoupled ML Inference (port 8080)
+│   ├── db.py                      <-- Case and Audit Log controller
+│   ├── config.py                  <-- App configurations & security parameters
+│   └── services/                  
+│       ├── graph_service.py       <-- Graph Topology Microservice (port 8081)
+│       └── reporting_service.py   <-- PDF report generation microservice (port 8082)
+│
+├── k8s/                           <-- Kubernetes Deployment Manifests
+│   └── all.yaml                   <-- Unified namespace, config, deployments, and services
 │
 ├── modeling/                      <-- Machine Learning Core
 │   ├── preprocessor.py            <-- Preprocessor class implementation
-│   ├── preprocessor.pkl           <-- Fitted transformer binary
 │   ├── mule_shield_model.json     <-- Production XGBoost model
-│   ├── feature_schema.json        <-- 6,820 aligned feature schema
-│   └── model_config.json          <-- Calibrated threshold (0.9899)
+│   └── retrain_pipeline.py        <-- Controlled model retraining & MLOps MLDD pipeline
 │
-├── scripts/                       <-- Optimization & Artifact Generators
-│   ├── optimize_pipeline_final.py <-- 5-Fold Group CV tuner
-│   └── build_modeling_artifacts.py<-- Artifact generator
+├── tests/                         <-- 49 Pass/Fail Verification Tests
+│   ├── test_rbac.py               <-- Authentication, RBAC, and rate limit checks
+│   ├── test_drift.py              <-- Feature & score drift calculations
+│   └── test_mlops.py              <-- Model MLOps status promotion restrictions
 │
-├── data/                          <-- Production Input Data
-│   ├── data_copy.csv              <-- Primary dataset file (9,082 rows)
-│   ├── Description.xlsx           <-- Business column dictionary
-│   └── shap_values_clean.npy      <-- Pre-computed TreeSHAP matrix cache
-│
-├── report/                        <-- Technical Audit Reports
-│   ├── final_report.md            <-- Comprehensive solution report
-│   ├── ml_audit_and_optimization_report.md  <-- ML tuning report
-│   ├── internal_technical_review_audit.md    <-- 17-Stage Technical Review
-│   └── production_readiness_architectural_audit.md <-- System audit
-│
-├── docs/                          <-- Full Documentation Package (32 files)
-│   ├── README.md                  <-- Master documentation hub
-│   └── PRE_SUBMISSION_INTEGRITY_AUDIT.md
-│
-├── LICENSE                        <-- Project License (MIT)
-├── run_our_model.py               <-- Root CLI inference script
-├── README.md                      <-- Master repository README
-└── .gitignore                     <-- Git version control rules
+├── CHANGELOG.md                   <-- Release history log
+└── LICENSE                        <-- MIT License
 ```
-
----
-
-## Hackathon Submission Integrity & Verification
-
-A 14-point pre-submission audit ([`docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md`](docs/PRE_SUBMISSION_INTEGRITY_AUDIT.md)) confirms:
-* **Zero Model Retraining:** Model weights (`mule_shield_model.json`) and preprocessor binaries (`preprocessor.pkl`) were strictly preserved.
-* **Purged Feature Audit:** Confirmed zero live/demo occurrences of purged post-incident resolution flags (`F3898`, `F3914`, etc.).
-* **Factual Compliance:** Removed all self-assigned promotional scores in favor of empirical cross-validation evidence.
-* **Server Verification:** Verified operational status of all Flask endpoints (`/api/cases`, `/api/predict`, `/api/cases/<id>/str-draft`).
 
 ---
 
